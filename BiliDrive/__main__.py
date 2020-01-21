@@ -77,11 +77,13 @@ def image_upload(data, cookies):
     }
     files = {
         'file_up': (f"{int(time.time() * 1000)}.bmp", data),
+    }
+    data = {
         'biz': "draw",
         'category': "daily",
     }
     try:
-        response = requests.post(url, headers=headers, cookies=cookies, files=files, timeout=300).json()
+        response = requests.post(url, data=data, headers=headers, cookies=cookies, files=files, timeout=300).json()
     except:
         response = None
     print(response)
