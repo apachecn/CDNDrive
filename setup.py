@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import setuptools
-import BiliDrive
+import BiliDriveEx
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
@@ -11,11 +11,11 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
     install_requires = fh.read().splitlines()
 
 setuptools.setup(
-    name="BiliDrive",
-    version=BiliDrive.__version__,
-    url="https://github.com/Hsury/BiliDrive",
-    author=BiliDrive.__author__,
-    author_email=BiliDrive.__email__,
+    name="BiliDriveEx",
+    version=BiliDriveEx.__version__,
+    url="https://github.com/apachecn/BiliDriveEx",
+    author=BiliDriveEx.__author__,
+    author_email=BiliDriveEx.__email__,
     classifiers=[
         "Development Status :: 4 - Beta",
         "Environment :: Console",
@@ -30,7 +30,7 @@ setuptools.setup(
         "Topic :: Internet :: WWW/HTTP",
         "Topic :: Utilities",
     ],
-    description="☁️ 哔哩哔哩云，支持任意文件的全速上传与下载",
+    description="☁️ 哔哩哔哩云 Ex，支持任意文件的全速上传与下载",
     long_description=long_description,
     long_description_content_type="text/markdown",
     keywords=[
@@ -50,7 +50,7 @@ setuptools.setup(
     python_requires=">=3.6",
     entry_points={
         'console_scripts': [
-            "BiliDrive=BiliDrive.__main__:main",
+            "bdex=BiliDriveEx.__main__:main",
         ],
     },
     packages=setuptools.find_packages(),
