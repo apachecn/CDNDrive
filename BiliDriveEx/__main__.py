@@ -367,8 +367,8 @@ def history_handle(args):
 
 def main():
     signal.signal(signal.SIGINT, lambda signum, frame: os.kill(os.getpid(), 9))
-    parser = argparse.ArgumentParser(prog="BiliDrive", description="Make Bilibili A Great Cloud Storage!", formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("-v", "--version", action="version", version=f"BiliDrive version: {__version__}")
+    parser = argparse.ArgumentParser(prog="BiliDriveEx", description="Make Bilibili A Great Cloud Storage!", formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("-v", "--version", action="version", version=f"BiliDriveEx version: {__version__}")
     subparsers = parser.add_subparsers()
     login_parser = subparsers.add_parser("login", help="log in to bilibili")
     login_parser.add_argument("username", help="your bilibili username")
@@ -393,7 +393,7 @@ def main():
     shell = False
     while True:
         if shell:
-            args = shlex.split(input("BiliDrive > "))
+            args = shlex.split(input("BiliDriveEx > "))
             try:
                 args = parser.parse_args(args)
                 args.func(args)
