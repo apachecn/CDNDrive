@@ -18,33 +18,16 @@ import traceback
 import types
 from BiliDrive import __version__
 from BiliDrive.bilibili import Bilibili
+from encoder import Encoder
 
 log = Bilibili._log
+encoder = Encoder()
 
 bundle_dir = os.path.dirname(sys.executable) if getattr(sys, "frozen", False) else os.path.dirname(os.path.abspath(__file__))
 
-default_url = lambda sha1: f"http://i0.hdslb.com/bfs/album/{sha1}.x-ms-bmp"
-meta_string = lambda url: ("bdrive://" + re.findall(r"[a-fA-F0-9]{40}", url)[0]) if re.match(r"^http(s?)://i0.hdslb.com/bfs/album/[a-fA-F0-9]{40}.x-ms-bmp$", url) else url
+default_url = lambda sha1: f"http://i0.hdslb.com/bfs/album/{sha1}.png"
+meta_string = lambda url: ("bdex://" + re.findall(r"[a-fA-F0-9]{40}", url)[0]) if re.match(r"^http(s?)://i0.hdslb.com/bfs/album/[a-fA-F0-9]{40}.png$", url) else url
 size_string = lambda byte: f"{byte / 1024 / 1024 / 1024:.2f} GB" if byte > 1024 * 1024 * 1024 else f"{byte / 1024 / 1024:.2f} MB" if byte > 1024 * 1024 else f"{byte / 1024:.2f} KB" if byte > 1024 else f"{int(byte)} B"
-
-def bmp_header(data):
-    return b"BM" \
-        + struct.pack("<l", 14 + 40 + 8 + len(data)) \
-        + b"\x00\x00" \
-        + b"\x00\x00" \
-        + b"\x3e\x00\x00\x00" \
-        + b"\x28\x00\x00\x00" \
-        + struct.pack("<l", len(data)) \
-        + b"\x01\x00\x00\x00" \
-        + b"\x01\x00" \
-        + b"\x01\x00" \
-        + b"\x00\x00\x00\x00" \
-        + struct.pack("<l", math.ceil(len(data) / 8)) \
-        + b"\x00\x00\x00\x00" \
-        + b"\x00\x00\x00\x00" \
-        + b"\x00\x00\x00\x00" \
-        + b"\x00\x00\x00\x00" \
-        + b"\x00\x00\x00\x00\xff\xff\xff\x00"
 
 def calc_sha1(data, hexdigest=False):
     sha1 = hashlib.sha1()
@@ -55,15 +38,19 @@ def calc_sha1(data, hexdigest=False):
         sha1.update(data)
     return sha1.hexdigest() if hexdigest else sha1.digest()
 
-def fetch_meta(string):
-    if re.match(r"^bdrive://[a-fA-F0-9]{40}$", string) or re.match(r"^[a-fA-F0-9]{40}$", string):
-        full_meta = image_download(default_url(re.findall(r"[a-fA-F0-9]{40}", string)[0]))
-    elif string.startswith("http://") or string.startswith("https://"):
-        full_meta = image_download(string)
+def fetch_meta(s):
+    if re.match(r"^bdex://[a-fA-F0-9]{40}$", s):
+        full_meta = image_download(default_url(re.findall(r"[a-fA-F0-9]{40}", s)[0]))
+    elif re.match(r"^bdrive://[a-fA-F0-9]{40}$", s):
+        full_meta = image_download(
+            default_url(re.findall(r"[a-fA-F0-9]{40}", s)[0]).replace('png', 'x-ms-bmp')
+        )
+    elif s.startswith("http://") or s.startswith("https://"):
+        full_meta = image_download(s)
     else:
         return None
     try:
-        meta_dict = json.loads(full_meta[62:].decode("utf-8"))
+        meta_dict = json.loads(encoder.decode(full_meta).decode("utf-8"))
         return meta_dict
     except:
         return None
@@ -76,7 +63,7 @@ def image_upload(data, cookies):
         'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36",
     }
     files = {
-        'file_up': (f"{int(time.time() * 1000)}.bmp", data),
+        'file_up': (f"{int(time.time() * 1000)}.png", data),
     }
     data = {
         'biz': "draw",
@@ -136,7 +123,7 @@ def upload_handle(args):
     def core(index, block):
         try:
             block_sha1 = calc_sha1(block, hexdigest=True)
-            full_block = bmp_header(block) + block
+            full_block = encoder.encode(block)
             full_block_sha1 = calc_sha1(full_block, hexdigest=True)
             url = is_skippable(full_block_sha1)
             if url:
@@ -246,7 +233,7 @@ def upload_handle(args):
         'block': [block_dict[i] for i in range(len(block_dict))],
     }
     meta = json.dumps(meta_dict, ensure_ascii=False).encode("utf-8")
-    full_meta = bmp_header(meta) + meta
+    full_meta = encoder.encode(meta)
     for _ in range(10):
         response = image_upload(full_meta, cookies)
         if response and response['code'] == 0:
@@ -269,7 +256,7 @@ def download_handle(args):
                     return
                 block = image_download(block_dict['url'])
                 if block:
-                    block = block[62:]
+                    block = encoder.decode(block)
                     if calc_sha1(block, hexdigest=True) == block_dict['sha1']:
                         file_lock.acquire()
                         f.seek(block_offset(index))
