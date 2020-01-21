@@ -16,9 +16,9 @@ import threading
 import time
 import traceback
 import types
-from BiliDrive import __version__
-from BiliDrive.bilibili import Bilibili
-from BiliDrive.encoder import Encoder
+from BiliDriveEx import __version__
+from BiliDriveEx.bilibili import Bilibili
+from BiliDriveEx.encoder import Encoder
 
 log = Bilibili._log
 encoder = Encoder()
