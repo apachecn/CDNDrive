@@ -18,7 +18,7 @@ import traceback
 import types
 from BiliDrive import __version__
 from BiliDrive.bilibili import Bilibili
-from encoder import Encoder
+from BiliDrive.encoder import Encoder
 
 log = Bilibili._log
 encoder = Encoder()
