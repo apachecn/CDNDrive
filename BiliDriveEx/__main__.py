@@ -73,7 +73,6 @@ def image_upload(data, cookies):
         response = requests.post(url, data=data, headers=headers, cookies=cookies, files=files, timeout=300).json()
     except:
         response = None
-    print(response)
     return response
 
 def image_download(url):

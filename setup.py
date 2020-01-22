@@ -50,6 +50,7 @@ setuptools.setup(
     python_requires=">=3.6",
     entry_points={
         'console_scripts': [
+            "BiliDriveEx=BiliDriveEx.__main__:main",
             "bdex=BiliDriveEx.__main__:main",
         ],
     },
