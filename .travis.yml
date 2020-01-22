@@ -1,0 +1,15 @@
+language: python
+python: 3.6
+
+install:
+    - 'pip install -r requirements.txt'
+
+script:
+    - python -m BiliDriveEx -v
+    
+deploy:
+    -   provider: pypi
+        user: __token__
+        password: $PYPI_TOKEN
+        distributions: 'sdist bdist_wheel'
+        skip_existing: true
