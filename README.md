@@ -156,6 +156,8 @@ META URL：`bdrive://d28784bff1086450a6c331fb322accccd382228e`
 
 本项目基于 [Hsury](https://github.com/Hsury) 的 [BiliDrive](https://github.com/Hsury/BiliDrive)，在此表示感谢。
 
+同时感谢 [goocarder](https://v2ex.com/t/618064) 提供的思路。
+
 ## 赞助我们
 
 ![](https://home.apachecn.org/img/about/donate.jpg)
