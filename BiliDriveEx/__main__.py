@@ -143,7 +143,7 @@ def upload_handle(args):
         log("暂不支持上传文件夹")
         return None
     log(f"上传: {os.path.basename(file_name)} ({size_string(os.path.getsize(file_name))})")
-    first_4mb_sha1 = calc_sha1(read_in_chunk(file_name, chunk_size=4 * 1024 * 1024, chunk_number=1))
+    first_4mb_sha1 = calc_sha1(read_in_chunk(file_name, size=4 * 1024 * 1024, cnt=1))
     history = read_history()
     if first_4mb_sha1 in history:
         url = history[first_4mb_sha1]['url']
@@ -162,7 +162,7 @@ def upload_handle(args):
     thread_pool = []
     block_dict = {}
     block_num = math.ceil(os.path.getsize(file_name) / (args.block_size * 1024 * 1024))
-    for index, block in enumerate(read_in_chunk(file_name, chunk_size=args.block_size * 1024 * 1024)):
+    for index, block in enumerate(read_in_chunk(file_name, size=args.block_size * 1024 * 1024)):
         if len(thread_pool) >= args.thread:
             done_flag.acquire()
         if not terminate_flag.is_set():

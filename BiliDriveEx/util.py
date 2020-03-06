@@ -52,16 +52,15 @@ def read_history():
     return history
     
 
-def read_in_chunk(file_name, chunk_size=4 * 1024 * 1024, chunk_number=-1):
-    chunk_counter = 0
-    with open(file_name, "rb") as f:
+def read_in_chunk(fname, size=4 * 1024 * 1024, cnt=-1):
+    with open(fname, "rb") as f:
+        idx = 0
         while True:
-            data = f.read(chunk_size)
-            if data != b"" and (chunk_number == -1 or chunk_counter < chunk_number):
-                yield data
-                chunk_counter += 1
-            else:
-                return
+            data = f.read(size)
+            if not data or (cnt != -1 and idx >= cnt):
+                break
+            yield data
+            idx += 1
                 
 def log(message):
     print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {message}")
