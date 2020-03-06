@@ -20,20 +20,10 @@ class Bilibili:
     meta_string = lambda self, url: ("bdex://" + re.findall(r"[a-fA-F0-9]{40}", url)[0]) if re.match(r"^http(s?)://i0.hdslb.com/bfs/album/[a-fA-F0-9]{40}.png$", url) else url
     
     get_cookies = lambda self: self.cookies
-    get_uid = lambda self: self.get_cookies().get("DedeUserID", "")
     
     def __init__(self):
         self.cookies = {}
-        self._session = requests.Session()
-        self._session.headers.update({'User-Agent': "Mozilla/5.0 BiliDroid/5.51.1 (bbcallen@gmail.com)"})
-
-    def _requests(self, method, url, decode_level=0, retry=0, timeout=10, **kwargs):
-        for _ in range(retry + 1):
-            try:
-                response = getattr(self._session, method.lower())(url, timeout=timeout, **kwargs)
-                return response.json() if decode_level == 2 else response.content if decode_level == 1 else response
-            except:
-                pass
+        self.load_cookies()
 
     def _solve_captcha(self, image):
         url = "https://bili.dev:2233/captcha"
@@ -102,7 +92,7 @@ class Bilibili:
         captcha = None
         while True:
             response = self.login_once(username, password, captcha)
-            print(response, self.cookies)
+            # print(response, self.cookies)
             
             if not response or 'code' not in response:
                 log(f"当前IP登录过于频繁, 1分钟后重试")
@@ -127,6 +117,7 @@ class Bilibili:
                 for cookie in response['data']['cookie_info']['cookies']:
                     self.cookies[cookie['name']] = cookie['value']
                 log("登录成功")
+                self.save_cookies()
                 return True
             
             log(f"登录失败 {response}")
@@ -137,8 +128,7 @@ class Bilibili:
     def get_user_info(self):
         url = f"https://api.bilibili.com/x/space/myinfo?jsonp=jsonp"
         headers = {
-            'Host': "api.bilibili.com",
-            'Referer': f"https://space.bilibili.com/{self.get_uid()}/",
+            'Referer': f"https://space.bilibili.com",
         }
         response = request_retry("get", url, 
             headers=headers, 
@@ -147,7 +137,6 @@ class Bilibili:
         
         if not response or response.get("code") != 0:
             return False
-        print(response)
         
         info = {
             'ban': False,
@@ -171,7 +160,16 @@ class Bilibili:
         info['uid'] = response['data']['mid']
         return info
             
-
+    def save_cookies(self):
+        with open(os.path.join(bundle_dir, "cookies.json"), "w", encoding="utf-8") as f:
+            f.write(json.dumps(self.cookies, ensure_ascii=False, indent=2))
+            
+    def load_cookies(self):
+        try:
+            with open(os.path.join(bundle_dir, "cookies.json"), "r", encoding="utf-8") as f:
+                self.cookies = json.loads(f.read())
+        except:
+            pass
             
     def exist(self, sha1):
         try:
@@ -186,7 +184,7 @@ class Bilibili:
             return None
                 
         
-    def image_upload(self, data, cookies):
+    def image_upload(self, data):
         sha1 = calc_sha1(data)
         url = self.exist(sha1)
         if url: return {'code': 0, 'data': {'image_url': url}}
@@ -205,7 +203,11 @@ class Bilibili:
             'category': "daily",
         }
         try:
-            response = requests.post(url, data=data, headers=headers, cookies=cookies, files=files, timeout=300).json()
+            response = requests.post(url, data=data, 
+                headers=headers, 
+                cookies=self.cookies, 
+                files=files, timeout=300
+            ).json()
         except:
             response = None
         return response

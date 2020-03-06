@@ -47,8 +47,7 @@ def login_handle(args):
         info = api.get_user_info()
         if info: log_info(info)
         else: log("用户信息获取失败")
-        with open(os.path.join(bundle_dir, "cookies.json"), "w", encoding="utf-8") as f:
-            f.write(json.dumps(api.get_cookies(), ensure_ascii=False, indent=2))
+
 
 def upload_handle(args):
     def core(index, block):
@@ -69,7 +68,7 @@ def upload_handle(args):
                 for _ in range(10):
                     if terminate_flag.is_set():
                         return
-                    response = api.image_upload(full_block, cookies)
+                    response = api.image_upload(full_block)
                     if response:
                         if response['code'] == 0:
                             url = response['data']['image_url']
@@ -109,12 +108,8 @@ def upload_handle(args):
         log(f"文件已于{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(history[first_4mb_sha1]['time']))}上传, 共有{len(history[first_4mb_sha1]['block'])}个分块")
         log(f"META URL -> {api.meta_string(url)}")
         return url
-    try:
-        with open(os.path.join(bundle_dir, "cookies.json"), "r", encoding="utf-8") as f:
-            cookies = json.loads(f.read())
-    except:
-        log("Cookies加载失败, 请先登录")
-        return None
+
+    # TODO: 判断 Cookie 是否有效
     log(f"线程数: {args.thread}")
     done_flag = threading.Semaphore(0)
     terminate_flag = threading.Event()
@@ -145,7 +140,7 @@ def upload_handle(args):
     meta = json.dumps(meta_dict, ensure_ascii=False).encode("utf-8")
     full_meta = encoder.encode(meta)
     for _ in range(10):
-        response = api.image_upload(full_meta, cookies)
+        response = api.image_upload(full_meta)
         if response and response['code'] == 0:
             url = response['data']['image_url']
             log("元数据上传完毕")
