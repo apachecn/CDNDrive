@@ -50,8 +50,14 @@ def read_history():
     except:
         history = {}
     return history
-    
 
+def write_history(first_4mb_sha1, meta_dict, url):
+    history = read_history()
+    history[first_4mb_sha1] = meta_dict
+    history[first_4mb_sha1]['url'] = url
+    with open(os.path.join(bundle_dir, "history.json"), "w", encoding="utf-8") as f:
+        f.write(json.dumps(history, ensure_ascii=False, indent=2))
+    
 def read_in_chunk(fname, size=4 * 1024 * 1024, cnt=-1):
     with open(fname, "rb") as f:
         idx = 0

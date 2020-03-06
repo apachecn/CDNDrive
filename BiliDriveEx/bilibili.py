@@ -163,3 +163,28 @@ class Bilibili:
             except:
                 pass
         return None
+        
+        
+    def image_upload(self, data, cookies):
+        sha1 = calc_sha1(data)
+        url = self.exist(sha1)
+        if url: return {'code': 0, 'data': {'image_url': url}}
+    
+        url = "https://api.vc.bilibili.com/api/v1/drawImage/upload"
+        headers = {
+            'Origin': "https://t.bilibili.com",
+            'Referer': "https://t.bilibili.com/",
+            'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36",
+        }
+        files = {
+            'file_up': (f"{int(time.time() * 1000)}.png", data),
+        }
+        data = {
+            'biz': "draw",
+            'category': "daily",
+        }
+        try:
+            response = requests.post(url, data=data, headers=headers, cookies=cookies, files=files, timeout=300).json()
+        except:
+            response = None
+        return response

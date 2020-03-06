@@ -41,25 +41,6 @@ def fetch_meta(s):
     except:
         return None
 
-def image_upload(data, cookies):
-    url = "https://api.vc.bilibili.com/api/v1/drawImage/upload"
-    headers = {
-        'Origin': "https://t.bilibili.com",
-        'Referer': "https://t.bilibili.com/",
-        'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36",
-    }
-    files = {
-        'file_up': (f"{int(time.time() * 1000)}.png", data),
-    }
-    data = {
-        'biz': "draw",
-        'category': "daily",
-    }
-    try:
-        response = requests.post(url, data=data, headers=headers, cookies=cookies, files=files, timeout=300).json()
-    except:
-        response = None
-    return response
 
 def login_handle(args):
     if api.login(username=args.username, password=args.password):
@@ -86,7 +67,7 @@ def upload_handle(args):
                 for _ in range(10):
                     if terminate_flag.is_set():
                         return
-                    response = image_upload(full_block, cookies)
+                    response = api.image_upload(full_block, cookies)
                     if response:
                         if response['code'] == 0:
                             url = response['data']['image_url']
@@ -109,13 +90,6 @@ def upload_handle(args):
             traceback.print_exc()
         finally:
             done_flag.release()
-
-    def write_history(first_4mb_sha1, meta_dict, url):
-        history = read_history()
-        history[first_4mb_sha1] = meta_dict
-        history[first_4mb_sha1]['url'] = url
-        with open(os.path.join(bundle_dir, "history.json"), "w", encoding="utf-8") as f:
-            f.write(json.dumps(history, ensure_ascii=False, indent=2))
 
     start_time = time.time()
     file_name = args.file
@@ -169,7 +143,7 @@ def upload_handle(args):
     meta = json.dumps(meta_dict, ensure_ascii=False).encode("utf-8")
     full_meta = encoder.encode(meta)
     for _ in range(10):
-        response = image_upload(full_meta, cookies)
+        response = api.image_upload(full_meta, cookies)
         if response and response['code'] == 0:
             url = response['data']['image_url']
             log("元数据上传完毕")
