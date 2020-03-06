@@ -77,7 +77,6 @@ class Bilibili:
         
     def login_once(self, username, password, captcha=None):
         key = self.get_key()
-        print('key: ', key)
         key_hash, pub_key = key['key_hash'], key['pub_key']
         username = parse.quote_plus(username)
         password = parse.quote_plus(base64.b64encode(rsa.encrypt(f'{key_hash}{password}'.encode(), pub_key)))
@@ -86,7 +85,8 @@ class Bilibili:
         if captcha: param += f'&captcha={captcha}'
         param += f"&password={password}&username={username}"
         payload = f"{param}&sign={self.calc_sign(param)}"
-        headers = {'Content-type': "application/x-www-form-urlencoded"}
+        headers = Bilibili.default_hdrs.copy()
+        headers.update({'Content-type': "application/x-www-form-urlencoded"})
         res = self._requests("POST", url, data=payload, headers=headers).json()
         return res
         
@@ -99,37 +99,38 @@ class Bilibili:
     # 登录
     def login(self, username, password):
 
+        captcha = None
         while True:
-            response = self.login_once(username, password)
-            print(response)
-            while True:
-                if response and response.get("code") is not None:
-                    if response['code'] == -105:
-                        response = self.get_captcha()
-                        captcha = self._solve_captcha(response)
-                        if captcha:
-                            log(f"登录验证码识别结果: {captcha}")
-                            response = self.login_once(username, password, captcha)
-                        else:
-                            log(f"登录验证码识别服务暂时不可用, 10秒后重试")
-                            time.sleep(10)
-                            break
-                    elif response['code'] == -449:
-                        time.sleep(1)
-                        response = self.login_once(username, password)
-                    elif response['code'] == 0 and response['data']['status'] == 0:
-                        print(response)
-                        for cookie in response['data']['cookie_info']['cookies']:
-                            self._session.cookies.set(cookie['name'], cookie['value'], domain=".bilibili.com")
-                        log("登录成功")
-                        return True
-                    else:
-                        log(f"登录失败 {response}")
-                        return False
+            response = self.login_once(username, password, captcha)
+            
+            if not response or 'code' not in response:
+                log(f"当前IP登录过于频繁, 1分钟后重试")
+                time.sleep(60)
+                continue
+                
+            if response['code'] == -105:
+                response = self.get_captcha()
+                captcha = self._solve_captcha(response)
+                if captcha:
+                    log(f"登录验证码识别结果: {captcha}")
                 else:
-                    log(f"当前IP登录过于频繁, 1分钟后重试")
-                    time.sleep(60)
-                    break
+                    log(f"登录验证码识别服务暂时不可用, 10秒后重试")
+                    time.sleep(10)
+                continue
+                
+            if response['code'] == -449:
+                time.sleep(1)
+                continue
+            
+            if response['code'] == 0 and response['data']['status'] == 0:
+                for cookie in response['data']['cookie_info']['cookies']:
+                    self._session.cookies.set(cookie['name'], cookie['value'], domain=".bilibili.com")
+                log("登录成功")
+                return True
+            
+            log(f"登录失败 {response}")
+            return False
+
 
     # 获取用户信息
     def get_user_info(self):
