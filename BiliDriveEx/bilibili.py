@@ -151,25 +151,23 @@ class Bilibili:
 
             
     def exist(self, sha1):
-        url = self.default_url(sha1)
-        headers = {
-            'Referer': "http://t.bilibili.com/",
-            'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36",
-        }
-        for _ in range(5):
-            try:
-                response = requests.head(url, headers=headers, timeout=10)
-                return url if response.status_code == 200 else None
-            except:
-                pass
-        return None
-        
+        try:
+            url = self.default_url(sha1)
+            headers = {
+                'Referer': "http://t.bilibili.com/",
+                'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36",
+            }
+            res = request_retry('HEAD', url, headers=headers, timeout=10)
+            return url if res.status_code == 200 else None
+        except:
+            return None
+                
         
     def image_upload(self, data, cookies):
         sha1 = calc_sha1(data)
         url = self.exist(sha1)
         if url: return {'code': 0, 'data': {'image_url': url}}
-    
+        
         url = "https://api.vc.bilibili.com/api/v1/drawImage/upload"
         headers = {
             'Origin': "https://t.bilibili.com",
