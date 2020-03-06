@@ -8,19 +8,21 @@ import types
 import requests
 import json
 import time
+import tempfile
 
-bundle_dir = path.dirname(sys.executable) if getattr(sys, "frozen", False) else path.dirname(path.abspath(__file__))
+bundle_dir = tempfile.gettempdir()
 
 size_string = lambda byte: f"{byte / 1024 / 1024 / 1024:.2f} GB" if byte > 1024 * 1024 * 1024 else f"{byte / 1024 / 1024:.2f} MB" if byte > 1024 * 1024 else f"{byte / 1024:.2f} KB" if byte > 1024 else f"{int(byte)} B"
 
-def calc_sha1(data, hexdigest=False):
+def calc_sha1(data, hex=True):
     sha1 = hashlib.sha1()
-    if isinstance(data, types.GeneratorType):
+    if hasattr(data, '__iter__') and \
+       type(data) is not bytes:
         for chunk in data:
             sha1.update(chunk)
     else:
         sha1.update(data)
-    return sha1.hexdigest() if hexdigest else sha1.digest()
+    return sha1.hexdigest() if hex else sha1.digest()
     
     
 def image_download(url):

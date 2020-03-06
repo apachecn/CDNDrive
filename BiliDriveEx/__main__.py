@@ -73,9 +73,9 @@ def login_handle(args):
 def upload_handle(args):
     def core(index, block):
         try:
-            block_sha1 = calc_sha1(block, hexdigest=True)
+            block_sha1 = calc_sha1(block)
             full_block = encoder.encode(block)
-            full_block_sha1 = calc_sha1(full_block, hexdigest=True)
+            full_block_sha1 = calc_sha1(full_block)
             url = is_skippable(full_block_sha1)
             if url:
                 log(f"分块{index + 1}/{block_num}上传完毕")
@@ -143,7 +143,7 @@ def upload_handle(args):
         log("暂不支持上传文件夹")
         return None
     log(f"上传: {os.path.basename(file_name)} ({size_string(os.path.getsize(file_name))})")
-    first_4mb_sha1 = calc_sha1(read_in_chunk(file_name, chunk_size=4 * 1024 * 1024, chunk_number=1), hexdigest=True)
+    first_4mb_sha1 = calc_sha1(read_in_chunk(file_name, chunk_size=4 * 1024 * 1024, chunk_number=1))
     history = read_history()
     if first_4mb_sha1 in history:
         url = history[first_4mb_sha1]['url']
@@ -175,7 +175,7 @@ def upload_handle(args):
         thread.join()
     if terminate_flag.is_set():
         return None
-    sha1 = calc_sha1(read_in_chunk(file_name), hexdigest=True)
+    sha1 = calc_sha1(read_in_chunk(file_name))
     meta_dict = {
         'time': int(time.time()),
         'filename': os.path.basename(file_name),
@@ -208,7 +208,7 @@ def download_handle(args):
                 block = image_download(block_dict['url'])
                 if block:
                     block = encoder.decode(block)
-                    if calc_sha1(block, hexdigest=True) == block_dict['sha1']:
+                    if calc_sha1(block) == block_dict['sha1']:
                         file_lock.acquire()
                         f.seek(block_offset(index))
                         f.write(block)
@@ -247,14 +247,14 @@ def download_handle(args):
     log(f"线程数: {args.thread}")
     download_block_list = []
     if os.path.exists(file_name):
-        if os.path.getsize(file_name) == meta_dict['size'] and calc_sha1(read_in_chunk(file_name), hexdigest=True) == meta_dict['sha1']:
+        if os.path.getsize(file_name) == meta_dict['size'] and calc_sha1(read_in_chunk(file_name)) == meta_dict['sha1']:
             log("文件已存在, 且与服务器端内容一致")
             return file_name
         elif is_overwritable(file_name):
             with open(file_name, "rb") as f:
                 for index, block_dict in enumerate(meta_dict['block']):
                     f.seek(block_offset(index))
-                    if calc_sha1(f.read(block_dict['size']), hexdigest=True) == block_dict['sha1']:
+                    if calc_sha1(f.read(block_dict['size'])) == block_dict['sha1']:
                         # log(f"分块{index + 1}/{len(meta_dict['block'])}校验通过")
                         pass
                     else:
@@ -285,7 +285,7 @@ def download_handle(args):
             return None
         f.truncate(sum(block['size'] for block in meta_dict['block']))
     log(f"{os.path.basename(file_name)} ({size_string(meta_dict['size'])}) 下载完毕, 用时{time.time() - start_time:.1f}秒, 平均速度{size_string(meta_dict['size'] / (time.time() - start_time))}/s")
-    sha1 = calc_sha1(read_in_chunk(file_name), hexdigest=True)
+    sha1 = calc_sha1(read_in_chunk(file_name))
     if sha1 == meta_dict['sha1']:
         log("文件校验通过")
         return file_name
