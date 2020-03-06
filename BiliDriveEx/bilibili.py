@@ -123,6 +123,7 @@ class Bilibili:
                 continue
             
             if response['code'] == 0 and response['data']['status'] == 0:
+                self.cookies = {}
                 for cookie in response['data']['cookie_info']['cookies']:
                     self.cookies[cookie['name']] = cookie['value']
                 log("登录成功")
@@ -134,7 +135,7 @@ class Bilibili:
 
 
     # 获取用户信息
-    def get_user_info(self):
+    def get_user_info(self, fmt=True):
         url = f"https://api.bilibili.com/x/space/myinfo"
         headers = {
             'Referer': f"https://space.bilibili.com",
@@ -145,7 +146,7 @@ class Bilibili:
         ).json()
         
         if not response or response.get("code") != 0:
-            return False
+            return
         
         info = {
             'ban': False,
@@ -167,7 +168,11 @@ class Bilibili:
         info['level'] = response['data']['level']
         info['nickname'] = response['data']['name']
         info['uid'] = response['data']['mid']
-        return info
+        
+        if fmt:
+            return f"{info['nickname']}(UID={info['uid']}), Lv.{info['level']}({info['experience']['current']}/{info['experience']['next']}), 拥有{info['coins']}枚硬币, 账号{'状态正常' if not info['ban'] else '被封禁'}"
+        else:
+            return info
             
     def save_cookies(self):
         with open(os.path.join(bundle_dir, "cookies.json"), "w", encoding="utf-8") as f:

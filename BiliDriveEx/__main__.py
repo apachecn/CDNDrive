@@ -45,14 +45,19 @@ def fetch_meta(s):
 def login_handle(args):
     if api.login(username=args.username, password=args.password):
         info = api.get_user_info()
-        if info: log_info(info)
+        if info: log(info)
         else: log("用户信息获取失败")
 
 def cookies_handle(args):
     api.set_cookies(args.cookies)
     info = api.get_user_info()
-    if info: log_info(info)
+    if info: log(info)
     else: log("用户信息获取失败")
+
+def userinfo_handle(args):
+    info = api.get_user_info()
+    if info: log(info)
+    else: log("用户未登录")
 
 def upload_handle(args):
     def core(index, block):
@@ -293,6 +298,9 @@ def main():
     cookies_parser.add_argument("cookies", help="your bilibili cookies")
     cookies_parser.set_defaults(func=cookies_handle)
 
+    userinfo_parser = subparsers.add_parser("userinfo", help="get userinfo")
+    userinfo_parser.set_defaults(func=userinfo_handle)
+    
     upload_parser = subparsers.add_parser("upload", help="upload a file")
     upload_parser.add_argument("file", help="name of the file to upload")
     upload_parser.add_argument("-b", "--block-size", default=4, type=int, help="block size in MB")
