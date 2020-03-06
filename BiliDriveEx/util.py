@@ -70,3 +70,13 @@ def read_in_chunk(fname, size=4 * 1024 * 1024, cnt=-1):
                 
 def log(message):
     print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {message}")
+    
+def request_retry(method, url, retry=5, **kwargs):
+    for i in range(retry):
+        try:
+            return requests.request(method, url, **kwargs)
+        except Exception as ex:
+            if i == retry - 1: raise ex
+            
+get_retry = lambda url, retry=5, **kwargs: request_retry('GET', url, retry, **kwargs)
+post_retry = lambda url, retry=5, **kwargs: request_retry('POST', url, retry, **kwargs)
