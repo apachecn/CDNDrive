@@ -70,31 +70,34 @@ class Bilibili:
             'appkey': Bilibili.app_key,
             'sign': self.calc_sign(f"appkey={Bilibili.app_key}"),
         }
-        while True:
-            res = request_retry("post", url, data=payload).json()
-            if res and res['code'] == 0:
-                return {
-                    'key_hash': res['data']['hash'],
-                    'pub_key': rsa.PublicKey.load_pkcs1_openssl_pem(res['data']['key'].encode()),
-                }
-            else:
-                time.sleep(1)
+        res = request_retry("post", url, data=payload, retry=999999).json()
+        if res and res['code'] == 0:
+            return {
+                'key_hash': res['data']['hash'],
+                'pub_key': rsa.PublicKey.load_pkcs1_openssl_pem(res['data']['key'].encode()),
+            }
+        
+    def login_once(self, username, password, captcha=None):
+        key = self.get_key()
+        key_hash, pub_key = key['key_hash'], key['pub_key']
+        username = parse.quote_plus(username)
+        password = parse.quote_plus(base64.b64encode(rsa.encrypt(f'{key_hash}{password}'.encode(), pub_key)))
+        url = f"https://passport.bilibili.com/api/v2/oauth2/login"
+        param = f"appkey={Bilibili.app_key}"
+        if captcha: param += f'&captcha={captcha}'
+        param += f"&password={password}&username={username}"
+        payload = f"{param}&sign={self.calc_sign(param)}"
+        headers = {'Content-type': "application/x-www-form-urlencoded"}
+        res = self._requests("post", url, data=payload, headers=headers)
+        return res
         
     # 登录
     def login(self, username, password):
-        
-
         self.username = username
         self.password = password
 
         while True:
-            key = self.get_key()
-            key_hash, pub_key = key['key_hash'], key['pub_key']
-            url = f"https://passport.bilibili.com/api/v2/oauth2/login"
-            param = f"appkey={Bilibili.app_key}&password={parse.quote_plus(base64.b64encode(rsa.encrypt(f'{key_hash}{self.password}'.encode(), pub_key)))}&username={parse.quote_plus(self.username)}"
-            payload = f"{param}&sign={self.calc_sign(param)}"
-            headers = {'Content-type': "application/x-www-form-urlencoded"}
-            response = self._requests("post", url, data=payload, headers=headers)
+            response = self.login_once(username, password)
             while True:
                 if response and response.get("code") is not None:
                     if response['code'] == -105:
@@ -104,13 +107,7 @@ class Bilibili:
                         captcha = self._solve_captcha(response)
                         if captcha:
                             log(f"登录验证码识别结果: {captcha}")
-                            key = get_key()
-                            key_hash, pub_key = key['key_hash'], key['pub_key']
-                            url = f"https://passport.bilibili.com/api/v2/oauth2/login"
-                            param = f"appkey={Bilibili.app_key}&captcha={captcha}&password={parse.quote_plus(base64.b64encode(rsa.encrypt(f'{key_hash}{self.password}'.encode(), pub_key)))}&username={parse.quote_plus(self.username)}"
-                            payload = f"{param}&sign={self.calc_sign(param)}"
-                            headers = {'Content-type': "application/x-www-form-urlencoded"}
-                            response = self._requests("post", url, data=payload, headers=headers)
+                            response = login_once(username, password, captcha)
                         else:
                             log(f"登录验证码识别服务暂时不可用, 10秒后重试")
                             time.sleep(10)
