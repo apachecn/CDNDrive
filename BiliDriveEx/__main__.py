@@ -263,13 +263,7 @@ def download_handle(args):
 def info_handle(args):
     meta_dict = fetch_meta(args.meta)
     if meta_dict:
-        print(f"文件名: {meta_dict['filename']}")
-        print(f"大小: {size_string(meta_dict['size'])}")
-        print(f"SHA-1: {meta_dict['sha1']}")
-        print(f"上传时间: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(meta_dict['time']))}")
-        print(f"分块数: {len(meta_dict['block'])}")
-        for index, block_dict in enumerate(meta_dict['block']):
-            print(f"分块{index + 1} ({size_string(block_dict['size'])}) URL: {block_dict['url']}")
+        print_meta(meta_dict)
     else:
         print("元数据解析失败")
 
