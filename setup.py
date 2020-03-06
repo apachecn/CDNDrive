@@ -21,7 +21,7 @@ setuptools.setup(
         "Environment :: Console",
         "Intended Audience :: Developers",
         "Intended Audience :: End Users/Desktop",
-        "License :: OSI Approved :: SATA License",
+        "License :: Other/Proprietary License",
         "Natural Language :: Chinese (Simplified)",
         "Natural Language :: English",
         "Operating System :: OS Independent",
