@@ -312,7 +312,8 @@ def main():
             try:
                 args.func(args)
                 break
-            except AttributeError:
+            except AttributeError as ex:
+                traceback.print_exc(file=sys.stdout)
                 shell = True
                 subparsers.add_parser("help", help="show this help message").set_defaults(func=lambda _: parser.parse_args(["--help"]).func())
                 subparsers.add_parser("version", help="show program's version number").set_defaults(func=lambda _: parser.parse_args(["--version"]).func())
