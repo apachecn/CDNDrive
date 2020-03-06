@@ -44,7 +44,9 @@ def fetch_meta(s):
 
 def login_handle(args):
     if api.login(username=args.username, password=args.password):
-        api.get_user_info()
+        info = api.get_user_info()
+        if info: log_info(info)
+        else: log("用户信息获取失败")
         with open(os.path.join(bundle_dir, "cookies.json"), "w", encoding="utf-8") as f:
             f.write(json.dumps(api.get_cookies(), ensure_ascii=False, indent=2))
 

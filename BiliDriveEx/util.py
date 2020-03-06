@@ -80,3 +80,6 @@ def request_retry(method, url, retry=5, **kwargs):
             
 get_retry = lambda url, retry=5, **kwargs: request_retry('GET', url, retry, **kwargs)
 post_retry = lambda url, retry=5, **kwargs: request_retry('POST', url, retry, **kwargs)
+
+def log_info(info):
+    log(f"{info['nickname']}(UID={info['uid']}), Lv.{info['level']}({info['experience']['current']}/{info['experience']['next']}), 拥有{info['coins']}枚硬币, 账号{'状态正常' if not info['ban'] else '被封禁'}")
