@@ -34,12 +34,12 @@ def fetch_meta(s):
     elif s.startswith("http://") or s.startswith("https://"):
         full_meta = image_download(s)
     else:
-        return None
+        return
     try:
         meta_dict = json.loads(encoder.decode(full_meta).decode("utf-8"))
         return meta_dict
     except:
-        return None
+        return
 
 
 def login_handle(args):
@@ -48,6 +48,11 @@ def login_handle(args):
         if info: log_info(info)
         else: log("用户信息获取失败")
 
+def cookies_handle(args):
+    api.set_cookies(args.cookies)
+    info = api.get_user_info()
+    if info: log_info(info)
+    else: log("用户信息获取失败")
 
 def upload_handle(args):
     def core(index, block):
@@ -96,10 +101,10 @@ def upload_handle(args):
     file_name = args.file
     if not os.path.exists(file_name):
         log(f"文件{file_name}不存在")
-        return None
+        return
     if os.path.isdir(file_name):
         log("暂不支持上传文件夹")
-        return None
+        return
     log(f"上传: {os.path.basename(file_name)} ({size_string(os.path.getsize(file_name))})")
     first_4mb_sha1 = calc_sha1(read_in_chunk(file_name, size=4 * 1024 * 1024, cnt=1))
     history = read_history()
@@ -109,7 +114,10 @@ def upload_handle(args):
         log(f"META URL -> {api.meta_string(url)}")
         return url
 
-    # TODO: 判断 Cookie 是否有效
+    if not api.get_user_info():
+        log("账号未登录，请先登录")
+        return
+        
     log(f"线程数: {args.thread}")
     done_flag = threading.Semaphore(0)
     terminate_flag = threading.Event()
@@ -128,7 +136,7 @@ def upload_handle(args):
     for thread in thread_pool:
         thread.join()
     if terminate_flag.is_set():
-        return None
+        return
     sha1 = calc_sha1(read_in_chunk(file_name))
     meta_dict = {
         'time': int(time.time()),
@@ -150,7 +158,7 @@ def upload_handle(args):
             return url
         log(f"元数据第{_ + 1}次上传失败")
     else:
-        return None
+        return
 
 def download_handle(args):
     def core(index, block_dict):
@@ -197,7 +205,7 @@ def download_handle(args):
         log(f"下载: {os.path.basename(file_name)} ({size_string(meta_dict['size'])}), 共有{len(meta_dict['block'])}个分块, 上传于{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(meta_dict['time']))}")
     else:
         log("元数据解析失败")
-        return None
+        return
     log(f"线程数: {args.thread}")
     download_block_list = []
     if os.path.exists(file_name):
@@ -216,7 +224,7 @@ def download_handle(args):
                         download_block_list.append(index)
             log(f"{len(download_block_list)}/{len(meta_dict['block'])}个分块待下载")
         else:
-            return None
+            return
     else:
         download_block_list = list(range(len(meta_dict['block'])))
     done_flag = threading.Semaphore(0)
@@ -236,7 +244,7 @@ def download_handle(args):
         for thread in thread_pool:
             thread.join()
         if terminate_flag.is_set():
-            return None
+            return
         f.truncate(sum(block['size'] for block in meta_dict['block']))
     log(f"{os.path.basename(file_name)} ({size_string(meta_dict['size'])}) 下载完毕, 用时{time.time() - start_time:.1f}秒, 平均速度{size_string(meta_dict['size'] / (time.time() - start_time))}/s")
     sha1 = calc_sha1(read_in_chunk(file_name))
@@ -245,7 +253,7 @@ def download_handle(args):
         return file_name
     else:
         log("文件校验未通过")
-        return None
+        return
 
 def info_handle(args):
     meta_dict = fetch_meta(args.meta)
@@ -275,21 +283,29 @@ def main():
     parser = argparse.ArgumentParser(prog="BiliDriveEx", description="Make Bilibili A Great Cloud Storage!", formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("-v", "--version", action="version", version=f"BiliDriveEx version: {__version__}")
     subparsers = parser.add_subparsers()
+    
     login_parser = subparsers.add_parser("login", help="log in to bilibili")
     login_parser.add_argument("username", help="your bilibili username")
     login_parser.add_argument("password", help="your bilibili password")
     login_parser.set_defaults(func=login_handle)
+    
+    cookies_parser = subparsers.add_parser("cookies", help="set cookies to bilibili")
+    cookies_parser.add_argument("cookies", help="your bilibili cookies")
+    cookies_parser.set_defaults(func=cookies_handle)
+
     upload_parser = subparsers.add_parser("upload", help="upload a file")
     upload_parser.add_argument("file", help="name of the file to upload")
     upload_parser.add_argument("-b", "--block-size", default=4, type=int, help="block size in MB")
     upload_parser.add_argument("-t", "--thread", default=4, type=int, help="upload thread number")
     upload_parser.set_defaults(func=upload_handle)
+    
     download_parser = subparsers.add_parser("download", help="download a file")
     download_parser.add_argument("meta", help="meta url")
     download_parser.add_argument("file", nargs="?", default="", help="new file name")
     download_parser.add_argument("-f", "--force", action="store_true", help="force to overwrite if file exists")
     download_parser.add_argument("-t", "--thread", default=8, type=int, help="download thread number")
     download_parser.set_defaults(func=download_handle)
+    
     info_parser = subparsers.add_parser("info", help="show meta info")
     info_parser.add_argument("meta", help="meta url")
     info_parser.set_defaults(func=info_handle)

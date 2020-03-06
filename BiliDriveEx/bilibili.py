@@ -25,6 +25,15 @@ class Bilibili:
         self.cookies = {}
         self.load_cookies()
 
+    def set_cookies(self, cookie_str):
+        self.cookies = {}
+        for kv in cookie_str.split('; '):
+            kv = kv.split('=')
+            if len(kv) != 2: continue
+            self.cookies[kv[0]] = kv[1]
+        self.save_cookies()
+            
+        
     def _solve_captcha(self, image):
         url = "https://bili.dev:2233/captcha"
         payload = {'image': base64.b64encode(image).decode("utf-8")}
@@ -126,7 +135,7 @@ class Bilibili:
 
     # 获取用户信息
     def get_user_info(self):
-        url = f"https://api.bilibili.com/x/space/myinfo?jsonp=jsonp"
+        url = f"https://api.bilibili.com/x/space/myinfo"
         headers = {
             'Referer': f"https://space.bilibili.com",
         }
@@ -181,7 +190,7 @@ class Bilibili:
             res = request_retry('HEAD', url, headers=headers, timeout=10)
             return url if res.status_code == 200 else None
         except:
-            return None
+            return
                 
         
     def image_upload(self, data):

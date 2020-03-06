@@ -35,12 +35,12 @@ def image_download(url):
     try:
         for chunk in requests.get(url, headers=headers, timeout=10, stream=True).iter_content(128 * 1024):
             if last_chunk_time is not None and time.time() - last_chunk_time > 5:
-                return None
+                return
             content.append(chunk)
             last_chunk_time = time.time()
         return b"".join(content)
     except:
-        return None
+        return
     
 
 def read_history():
