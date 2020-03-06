@@ -7,12 +7,17 @@ import random
 import requests
 import rsa
 import time
+import re
 from urllib import parse
 from BiliDriveEx.util import *
 
 class Bilibili:
     app_key = "1d8b6e7d45233436"
 
+    
+    default_url = lambda self, sha1: f"http://i0.hdslb.com/bfs/album/{sha1}.png"
+    meta_string = lambda self, url: ("bdex://" + re.findall(r"[a-fA-F0-9]{40}", url)[0]) if re.match(r"^http(s?)://i0.hdslb.com/bfs/album/[a-fA-F0-9]{40}.png$", url) else url
+    
     def __init__(self):
         self._session = requests.Session()
         self._session.headers.update({'User-Agent': "Mozilla/5.0 BiliDroid/5.51.1 (bbcallen@gmail.com)"})
@@ -143,3 +148,18 @@ class Bilibili:
         else:
             log("用户信息获取失败")
             return False
+
+            
+    def exist(self, sha1):
+        url = self.default_url(sha1)
+        headers = {
+            'Referer': "http://t.bilibili.com/",
+            'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36",
+        }
+        for _ in range(5):
+            try:
+                response = requests.head(url, headers=headers, timeout=10)
+                return url if response.status_code == 200 else None
+            except:
+                pass
+        return None
