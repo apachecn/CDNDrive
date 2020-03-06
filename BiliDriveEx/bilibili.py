@@ -8,6 +8,7 @@ import requests
 import rsa
 import time
 from urllib import parse
+from BiliDriveEx.util import *
 
 class Bilibili:
     app_key = "1d8b6e7d45233436"
@@ -31,9 +32,7 @@ class Bilibili:
             'nickname': "",
         }
 
-    @staticmethod
-    def _log(message):
-        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))}] {message}")
+
 
     def _requests(self, method, url, decode_level=2, retry=0, timeout=10, **kwargs):
         if method in ["get", "post"]:
@@ -95,7 +94,7 @@ class Bilibili:
                         response = self._requests("get", url, headers=headers, decode_level=1)
                         captcha = self._solve_captcha(response)
                         if captcha:
-                            self._log(f"登录验证码识别结果: {captcha}")
+                            log(f"登录验证码识别结果: {captcha}")
                             key = get_key()
                             key_hash, pub_key = key['key_hash'], key['pub_key']
                             url = f"https://passport.bilibili.com/api/v2/oauth2/login"
@@ -104,7 +103,7 @@ class Bilibili:
                             headers = {'Content-type': "application/x-www-form-urlencoded"}
                             response = self._requests("post", url, data=payload, headers=headers)
                         else:
-                            self._log(f"登录验证码识别服务暂时不可用, 10秒后重试")
+                            log(f"登录验证码识别服务暂时不可用, 10秒后重试")
                             time.sleep(10)
                             break
                     elif response['code'] == -449:
@@ -113,13 +112,13 @@ class Bilibili:
                     elif response['code'] == 0 and response['data']['status'] == 0:
                         for cookie in response['data']['cookie_info']['cookies']:
                             self._session.cookies.set(cookie['name'], cookie['value'], domain=".bilibili.com")
-                        self._log("登录成功")
+                        log("登录成功")
                         return True
                     else:
-                        self._log(f"登录失败 {response}")
+                        log(f"登录失败 {response}")
                         return False
                 else:
-                    self._log(f"当前IP登录过于频繁, 1分钟后重试")
+                    log(f"当前IP登录过于频繁, 1分钟后重试")
                     time.sleep(60)
                     break
 
@@ -139,8 +138,8 @@ class Bilibili:
             self.info['face'] = response['data']['face']
             self.info['level'] = response['data']['level']
             self.info['nickname'] = response['data']['name']
-            self._log(f"{self.info['nickname']}(UID={self.get_uid()}), Lv.{self.info['level']}({self.info['experience']['current']}/{self.info['experience']['next']}), 拥有{self.info['coins']}枚硬币, 账号{'状态正常' if not self.info['ban'] else '被封禁'}")
+            log(f"{self.info['nickname']}(UID={self.get_uid()}), Lv.{self.info['level']}({self.info['experience']['current']}/{self.info['experience']['next']}), 拥有{self.info['coins']}枚硬币, 账号{'状态正常' if not self.info['ban'] else '被封禁'}")
             return True
         else:
-            self._log("用户信息获取失败")
+            log("用户信息获取失败")
             return False

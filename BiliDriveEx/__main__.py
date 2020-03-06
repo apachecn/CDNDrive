@@ -19,24 +19,12 @@ import types
 from BiliDriveEx import __version__
 from BiliDriveEx.bilibili import Bilibili
 from BiliDriveEx.encoder import Encoder
+from BiliDriveEx.util import *
 
-log = Bilibili._log
 encoder = Encoder()
-
-bundle_dir = os.path.dirname(sys.executable) if getattr(sys, "frozen", False) else os.path.dirname(os.path.abspath(__file__))
 
 default_url = lambda sha1: f"http://i0.hdslb.com/bfs/album/{sha1}.png"
 meta_string = lambda url: ("bdex://" + re.findall(r"[a-fA-F0-9]{40}", url)[0]) if re.match(r"^http(s?)://i0.hdslb.com/bfs/album/[a-fA-F0-9]{40}.png$", url) else url
-size_string = lambda byte: f"{byte / 1024 / 1024 / 1024:.2f} GB" if byte > 1024 * 1024 * 1024 else f"{byte / 1024 / 1024:.2f} MB" if byte > 1024 * 1024 else f"{byte / 1024:.2f} KB" if byte > 1024 else f"{int(byte)} B"
-
-def calc_sha1(data, hexdigest=False):
-    sha1 = hashlib.sha1()
-    if isinstance(data, types.GeneratorType):
-        for chunk in data:
-            sha1.update(chunk)
-    else:
-        sha1.update(data)
-    return sha1.hexdigest() if hexdigest else sha1.digest()
 
 def fetch_meta(s):
     if re.match(r"^bdex://[a-fA-F0-9]{40}$", s):
@@ -74,42 +62,6 @@ def image_upload(data, cookies):
     except:
         response = None
     return response
-
-def image_download(url):
-    headers = {
-        'Referer': "http://t.bilibili.com/",
-        'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36",
-    }
-    content = []
-    last_chunk_time = None
-    try:
-        for chunk in requests.get(url, headers=headers, timeout=10, stream=True).iter_content(128 * 1024):
-            if last_chunk_time is not None and time.time() - last_chunk_time > 5:
-                return None
-            content.append(chunk)
-            last_chunk_time = time.time()
-        return b"".join(content)
-    except:
-        return None
-
-def read_history():
-    try:
-        with open(os.path.join(bundle_dir, "history.json"), "r", encoding="utf-8") as f:
-            history = json.loads(f.read())
-    except:
-        history = {}
-    return history
-
-def read_in_chunk(file_name, chunk_size=16 * 1024 * 1024, chunk_number=-1):
-    chunk_counter = 0
-    with open(file_name, "rb") as f:
-        while True:
-            data = f.read(chunk_size)
-            if data != b"" and (chunk_number == -1 or chunk_counter < chunk_number):
-                yield data
-                chunk_counter += 1
-            else:
-                return
 
 def login_handle(args):
     bilibili = Bilibili()
