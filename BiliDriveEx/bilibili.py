@@ -18,11 +18,12 @@ class Bilibili:
     default_url = lambda self, sha1: f"http://i0.hdslb.com/bfs/album/{sha1}.png"
     meta_string = lambda self, url: ("bdex://" + re.findall(r"[a-fA-F0-9]{40}", url)[0]) if re.match(r"^http(s?)://i0.hdslb.com/bfs/album/[a-fA-F0-9]{40}.png$", url) else url
     
+    get_cookies = lambda self: self._session.cookies.get_dict(domain=".bilibili.com")
+    get_uid = lambda self: self.get_cookies().get("DedeUserID", "")
+    
     def __init__(self):
         self._session = requests.Session()
         self._session.headers.update({'User-Agent': "Mozilla/5.0 BiliDroid/5.51.1 (bbcallen@gmail.com)"})
-        self.get_cookies = lambda: self._session.cookies.get_dict(domain=".bilibili.com")
-        self.get_uid = lambda: self.get_cookies().get("DedeUserID", "")
         self.username = ""
         self.password = ""
         self.info = {
@@ -62,29 +63,32 @@ class Bilibili:
         sign_hash.update(f"{param}{salt}".encode())
         return sign_hash.hexdigest()
 
+        
+    def get_key(self):
+        url = f"https://passport.bilibili.com/api/oauth2/getKey"
+        payload = {
+            'appkey': Bilibili.app_key,
+            'sign': self.calc_sign(f"appkey={Bilibili.app_key}"),
+        }
+        while True:
+            res = request_retry("post", url, data=payload).json()
+            if res and res['code'] == 0:
+                return {
+                    'key_hash': res['data']['hash'],
+                    'pub_key': rsa.PublicKey.load_pkcs1_openssl_pem(res['data']['key'].encode()),
+                }
+            else:
+                time.sleep(1)
+        
     # 登录
     def login(self, username, password):
-        def get_key():
-            url = f"https://passport.bilibili.com/api/oauth2/getKey"
-            payload = {
-                'appkey': Bilibili.app_key,
-                'sign': self.calc_sign(f"appkey={Bilibili.app_key}"),
-            }
-            while True:
-                response = self._requests("post", url, data=payload)
-                if response and response.get("code") == 0:
-                    return {
-                        'key_hash': response['data']['hash'],
-                        'pub_key': rsa.PublicKey.load_pkcs1_openssl_pem(response['data']['key'].encode()),
-                    }
-                else:
-                    time.sleep(1)
+        
 
         self.username = username
         self.password = password
 
         while True:
-            key = get_key()
+            key = self.get_key()
             key_hash, pub_key = key['key_hash'], key['pub_key']
             url = f"https://passport.bilibili.com/api/v2/oauth2/login"
             param = f"appkey={Bilibili.app_key}&password={parse.quote_plus(base64.b64encode(rsa.encrypt(f'{key_hash}{self.password}'.encode(), pub_key)))}&username={parse.quote_plus(self.username)}"

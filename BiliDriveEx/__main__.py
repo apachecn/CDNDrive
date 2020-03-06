@@ -46,7 +46,7 @@ def login_handle(args):
     if api.login(username=args.username, password=args.password):
         api.get_user_info()
         with open(os.path.join(bundle_dir, "cookies.json"), "w", encoding="utf-8") as f:
-            f.write(json.dumps(bilibili.get_cookies(), ensure_ascii=False, indent=2))
+            f.write(json.dumps(api.get_cookies(), ensure_ascii=False, indent=2))
 
 def upload_handle(args):
     def core(index, block):
