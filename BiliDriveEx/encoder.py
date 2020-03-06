@@ -50,14 +50,14 @@ class Encoder:
         
         minsz = minw * minh * dep
         if len(data) < minsz:
-            data = data + b'\0' * (minsz - len(data))
+            data += b'\0' * (minsz - len(data))
         
-        rem = len(data) % (minw * dep)
-        if rem != 0:
-            data = data + b'\0' * (minw * dep - rem)
-        hei = len(data) // (minw * dep)
+        side = math.ceil(math.sqrt(len(data) / dep))
+        total = side * side * dep
+        if len(data) < total:
+            data += b'\0' * (total - len(data))
         
-        img = Image.frombytes(mode, (minw, hei), data)
+        img = Image.frombytes(mode, (side, side), data)
         bio = BytesIO()
         img.save(bio, 'png')
         return bio.getvalue()
