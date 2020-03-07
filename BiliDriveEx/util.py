@@ -27,7 +27,6 @@ def calc_sha1(data, hex=True):
     
 def image_download(url):
     headers = {
-        'Referer': "http://t.bilibili.com/",
         'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36",
     }
     content = []
@@ -38,9 +37,9 @@ def image_download(url):
                 return
             content.append(chunk)
             last_chunk_time = time.time()
-        return b"".join(content)
     except:
         return
+    return b"".join(content)
     
 
 def read_history():

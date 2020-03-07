@@ -17,13 +17,28 @@ class Bilibili:
     default_hdrs = {'User-Agent': "Mozilla/5.0 BiliDroid/5.51.1 (bbcallen@gmail.com)"}
     
     default_url = lambda self, sha1: f"http://i0.hdslb.com/bfs/album/{sha1}.png"
-    meta_string = lambda self, url: ("bdex://" + re.findall(r"[a-fA-F0-9]{40}", url)[0]) if re.match(r"^http(s?)://i0.hdslb.com/bfs/album/[a-fA-F0-9]{40}.png$", url) else url
-    
+    extract_hash = lambda self, s: re.findall(r"[a-fA-F0-9]{40}", s)[0]    
     get_cookies = lambda self: self.cookies
     
     def __init__(self):
         self.cookies = {}
         self.load_cookies()
+        
+    def meta2real(self, url):
+        if re.match(r"^bdex://[a-fA-F0-9]{40}$", url):
+            return self.default_url(self.extract_hash(url))
+        elif re.match(r"^bdrive://[a-fA-F0-9]{40}$", url):
+            return self.default_url(self.extract_hash(url)) \
+                       .replace('.png', '.x-ms-bmp')
+        else:
+            return None
+            
+    def real2meta(self, url):
+        if re.match(r"^https?://i0.hdslb.com/bfs/album/[a-fA-F0-9]{40}.png$", url):
+            return "bdex://" + self.extract_hash(url)
+        else:
+            return None
+        
 
     def set_cookies(self, cookie_str):
         self.cookies = {}

@@ -25,22 +25,13 @@ encoder = Encoder()
 api = Bilibili()
 
 def fetch_meta(s):
-    if re.match(r"^bdex://[a-fA-F0-9]{40}$", s):
-        full_meta = image_download(api.default_url(re.findall(r"[a-fA-F0-9]{40}", s)[0]))
-    elif re.match(r"^bdrive://[a-fA-F0-9]{40}$", s):
-        full_meta = image_download(
-            api.default_url(re.findall(r"[a-fA-F0-9]{40}", s)[0]).replace('png', 'x-ms-bmp')
-        )
-    elif s.startswith("http://") or s.startswith("https://"):
-        full_meta = image_download(s)
-    else:
-        return
-    try:
-        meta_dict = json.loads(encoder.decode(full_meta).decode("utf-8"))
-        return meta_dict
-    except:
-        return
-
+    url = api.meta2real(s)
+    if not url: return None
+    print(url)
+    full_meta = image_download(url)
+    if not full_meta: return None
+    meta_dict = json.loads(encoder.decode(full_meta).decode("utf-8"))
+    return meta_dict
 
 def login_handle(args):
     r = api.login(args.username, args.password)
@@ -119,7 +110,7 @@ def upload_handle(args):
     if first_4mb_sha1 in history:
         url = history[first_4mb_sha1]['url']
         log(f"文件已于{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(history[first_4mb_sha1]['time']))}上传, 共有{len(history[first_4mb_sha1]['block'])}个分块")
-        log(f"META URL -> {api.meta_string(url)}")
+        log(f"META URL -> {api.real2meta(url)}")
         return url
 
     if not api.get_user_info():
@@ -161,7 +152,7 @@ def upload_handle(args):
             url = response['data']['image_url']
             log("元数据上传完毕")
             log(f"{meta_dict['filename']} ({size_string(meta_dict['size'])}) 上传完毕, 用时{time.time() - start_time:.1f}秒, 平均速度{size_string(meta_dict['size'] / (time.time() - start_time))}/s")
-            log(f"META URL -> {api.meta_string(url)}")
+            log(f"META URL -> {api.real2meta(url)}")
             write_history(first_4mb_sha1, meta_dict, url)
             return url
         log(f"元数据第{_ + 1}次上传失败")
@@ -268,7 +259,7 @@ def info_handle(args):
     if meta_dict:
         print_meta(meta_dict)
     else:
-        print("元数据解析失败")
+        log("元数据解析失败")
 
 def history_handle(args):
     history = read_history()
@@ -276,7 +267,7 @@ def history_handle(args):
         for index, meta_dict in enumerate(history.values()):
             prefix = f"[{index + 1}]"
             print(f"{prefix} {meta_dict['filename']} ({size_string(meta_dict['size'])}), 共有{len(meta_dict['block'])}个分块, 上传于{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(meta_dict['time']))}")
-            print(f"{' ' * len(prefix)} META URL -> {api.meta_string(meta_dict['url'])}")
+            print(f"{' ' * len(prefix)} META URL -> {api.real2meta(meta_dict['url'])}")
     else:
         print(f"暂无历史记录")
 
