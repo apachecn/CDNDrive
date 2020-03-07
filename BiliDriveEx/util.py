@@ -32,9 +32,8 @@ def image_download(url):
     content = []
     last_chunk_time = None
     try:
-        for chunk in request_retry('GET', url, 
-            headers=headers, stream=True
-        ).iter_content(128 * 1024):
+        r = request_retry('GET', url, headers=headers, stream=True)
+        for chunk in r.iter_content(128 * 1024):
             if last_chunk_time is not None and \
                time.time() - last_chunk_time > 5:
                 return
