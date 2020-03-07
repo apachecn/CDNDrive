@@ -33,8 +33,9 @@ class Bilibili:
             self.cookies[kv[0]] = kv[1]
         self.save_cookies()
             
-        
-    def _solve_captcha(self, image):
+    
+    # 识别验证码
+    def solve_captcha(self, image):
         url = "https://bili.dev:2233/captcha"
         payload = {'image': base64.b64encode(image).decode("utf-8")}
         try:
@@ -77,7 +78,8 @@ class Bilibili:
         else:
             return None
         
-    def _login_once(self, username, password, captcha=None):
+    # 登录一次
+    def login_once(self, username, password, captcha=None):
         key = self._get_key()
         if not key: return {'code': 114514, 'message': 'key 获取失败'}
         key_hash, pub_key = key['key_hash'], key['pub_key']
@@ -100,9 +102,17 @@ class Bilibili:
             ).json()
         except Exception as ex:
             return {'code': 114514, 'message': str(ex)}
+            
+        if j['code'] == 0 and j['data']['status'] == 0:
+            self.cookies = {}
+            for cookie in j['data']['cookie_info']['cookies']:
+                self.cookies[cookie['name']] = cookie['value']
+            self.save_cookies()
+            
         return j
-        
-    def _get_captcha(self):
+    
+    # 获取验证码
+    def get_captcha(self):
         url = f"https://passport.bilibili.com/captcha"
         try:
             img = request_retry('GET', url, 
@@ -114,46 +124,25 @@ class Bilibili:
         return img
         
     # 登录
-    def login(self, username, password):
+    def login(self, username, password, retry=5):
 
         captcha = None
-        while True:
-            j = self._login_once(username, password, captcha)
-            
-            if 'code' not in j:
-                log(f"当前IP登录过于频繁, 1分钟后重试")
-                time.sleep(60)
-                continue
-                
+        for _ in range(retry):
+            j = self.login_once(username, password, captcha)
+
             if j['code'] == -105:
-                img = self._get_captcha()
+                img = self.get_captcha()
                 if not img:
-                    log(f"验证码获取失败")
                     time.sleep(1)
                     continue
-                captcha = self._solve_captcha(img)
-                if captcha:
-                    log(f"登录验证码识别结果: {captcha}")
-                else:
-                    log(f"登录验证码识别服务暂时不可用, 10秒后重试")
-                    time.sleep(10)
-                continue
-                
-            if j['code'] == -449:
-                time.sleep(1)
+                captcha = self.solve_captcha(img)
+                if not captcha:
+                    time.sleep(1)
                 continue
             
-            if j['code'] == 0 and j['data']['status'] == 0:
-                self.cookies = {}
-                for cookie in j['data']['cookie_info']['cookies']:
-                    self.cookies[cookie['name']] = cookie['value']
-                log("登录成功")
-                self.save_cookies()
-                return True
+            return j
             
-            log(f"登录失败 {j['message']}")
-            return False
-
+        return j
 
     # 获取用户信息
     def get_user_info(self, fmt=True):
@@ -209,7 +198,8 @@ class Bilibili:
                 self.cookies = json.loads(f.read())
         except:
             pass
-            
+    
+    # 图片是否已存在
     def exist(self, sha1):
         url = self.default_url(sha1)
         try:

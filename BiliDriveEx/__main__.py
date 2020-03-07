@@ -43,10 +43,13 @@ def fetch_meta(s):
 
 
 def login_handle(args):
-    if api.login(username=args.username, password=args.password):
-        info = api.get_user_info()
-        if info: log(info)
-        else: log("用户信息获取失败")
+    r = api.login(args.username, args.password)
+    if r['code'] != 0:
+        log(f"登录失败：{r['message']}")
+        return
+    info = api.get_user_info()
+    if info: log(info)
+    else: log("用户信息获取失败")
 
 def cookies_handle(args):
     api.set_cookies(args.cookies)
@@ -184,10 +187,10 @@ def download_handle(args):
                         return
                     else:
                         log(f"分块{index + 1}/{len(meta_dict['block'])}校验未通过")
+                        terminate_flag.set()
                 else:
                     log(f"分块{index + 1}/{len(meta_dict['block'])}第{_ + 1}次下载失败")
-            else:
-                terminate_flag.set()
+                    terminate_flag.set()
         except:
             terminate_flag.set()
             traceback.print_exc()
