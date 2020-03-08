@@ -32,7 +32,6 @@ lock = threading.Lock()
 def fetch_meta(s):
     url = api.meta2real(s)
     if not url: return None
-    print(url)
     full_meta = image_download(url)
     if not full_meta: return None
     meta_dict = json.loads(encoder.decode(full_meta).decode("utf-8"))
@@ -72,9 +71,9 @@ def tr_upload(i, block, block_dict):
                 'size': len(block),
                 'sha1': calc_sha1(block),
             })
-        print(f'分块{i + 1}/{nblocks}上传完毕')
+        log(f'分块{i + 1}/{nblocks}上传完毕')
     else:
-        print(f"分块{i + 1}/{nblocks}上传失败：{r.get('message')}")
+        log(f"分块{i + 1}/{nblocks}上传失败：{r.get('message')}")
         succ = False
     
 def upload_handle(args):
@@ -154,9 +153,9 @@ def tr_download(i, block_dict, f, offset):
         with lock:
             f.seek(offset)
             f.write(block)
-        print(f"分块{i + 1}/{nblocks}下载完毕")
+        log(f"分块{i + 1}/{nblocks}下载完毕")
     else:
-        print(f"分块{i + 1}/{nblocks}校验未通过")
+        log(f"分块{i + 1}/{nblocks}校验未通过")
         succ = False
             
 
