@@ -72,7 +72,7 @@ def read_in_chunk(fname, size=4 * 1024 * 1024, cnt=-1):
 def log(message):
     print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {message}")
     
-def request_retry(method, url, retry=5, **kwargs):
+def request_retry(method, url, retry=10, **kwargs):
     kwargs.setdefault('timeout', 10)
     for i in range(retry):
         try:
@@ -80,8 +80,8 @@ def request_retry(method, url, retry=5, **kwargs):
         except Exception as ex:
             if i == retry - 1: raise ex
             
-get_retry = lambda url, retry=5, **kwargs: request_retry('GET', url, retry, **kwargs)
-post_retry = lambda url, retry=5, **kwargs: request_retry('POST', url, retry, **kwargs)
+get_retry = lambda url, retry=10, **kwargs: request_retry('GET', url, retry, **kwargs)
+post_retry = lambda url, retry=10, **kwargs: request_retry('POST', url, retry, **kwargs)
 
 def print_meta(meta_dict):
     print(f"文件名: {meta_dict['filename']}")
@@ -91,3 +91,9 @@ def print_meta(meta_dict):
     print(f"分块数: {len(meta_dict['block'])}")
     for index, block_dict in enumerate(meta_dict['block']):
         print(f"分块{index + 1} ({size_string(block_dict['size'])}) URL: {block_dict['url']}")
+        
+def block_offset(meta_dict, i):
+    return sum(meta_dict['block'][j]['size'] for j in range(i))
+    
+def ask_overwrite():
+    return (input(f"文件已存在, 是否覆盖? [y/N] ") in ["y", "Y"])
