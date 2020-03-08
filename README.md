@@ -24,9 +24,7 @@ pip install BiliDriveEx
 从源码安装：
 
 ```
-git clone https://github.com/apachecn/BiliDriveEx
-cd BiliDriveEx
-python setup.py install
+pip install git+https://github.com/apachecn/BiliDriveEx
 ```
 
 ### 登录
