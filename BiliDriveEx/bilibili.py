@@ -251,5 +251,8 @@ class Bilibili:
             return {'code': 114514, 'message': str(ex)}
             
         if r.status_code != 200:
-            return {'code': r.status_code, 'message': r.text}
+            return {
+                'code': r.status_code, 
+                'message': f'HTTP {r.status_code}'
+            }
         return r.json()
