@@ -66,12 +66,11 @@ def tr_upload(i, block, block_dict):
         r = api.image_upload(enco_block)
         if r['code'] == 0:
             url = r['data']['image_url']
-            with lock: 
-                block_dict.update({
-                    'url': url,
-                    'size': len(block),
-                    'sha1': calc_sha1(block),
-                })
+            block_dict.update({
+                'url': url,
+                'size': len(block),
+                'sha1': calc_sha1(block),
+            })
             log(f'分块{i + 1}/{nblocks}上传完毕')
             break
         else:
