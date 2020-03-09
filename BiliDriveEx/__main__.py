@@ -60,21 +60,23 @@ def userinfo_handle(args):
 def tr_upload(i, block, block_dict):
     global succ
 
-    if not succ: return
     enco_block = encoder.encode(block)
-    r = api.image_upload(enco_block)
-    if r['code'] == 0:
-        url = r['data']['image_url']
-        with lock: 
-            block_dict.update({
-                'url': url,
-                'size': len(block),
-                'sha1': calc_sha1(block),
-            })
-        log(f'分块{i + 1}/{nblocks}上传完毕')
-    else:
-        log(f"分块{i + 1}/{nblocks}上传失败：{r.get('message')}")
-        succ = False
+    for j in range(10):
+        if not succ: break
+        r = api.image_upload(enco_block)
+        if r['code'] == 0:
+            url = r['data']['image_url']
+            with lock: 
+                block_dict.update({
+                    'url': url,
+                    'size': len(block),
+                    'sha1': calc_sha1(block),
+                })
+            log(f'分块{i + 1}/{nblocks}上传完毕')
+            break
+        else:
+            log(f"分块{i + 1}/{nblocks}第{j + 1}次上传失败：{r.get('message')}")
+            if j == 9: succ = False
     
 def upload_handle(args):
     global succ
@@ -141,22 +143,24 @@ def upload_handle(args):
 def tr_download(i, block_dict, f, offset):
     global succ
 
-    if not succ: return
     url = block_dict['url']
-    block = image_download(url)
-    if not block:
-        log(f"分块{i + 1}/{nblocks}下载失败")
-        succ = False
-        return
-    block = encoder.decode(block)
-    if calc_sha1(block) == block_dict['sha1']:
-        with lock:
-            f.seek(offset)
-            f.write(block)
-        log(f"分块{i + 1}/{nblocks}下载完毕")
-    else:
-        log(f"分块{i + 1}/{nblocks}校验未通过")
-        succ = False
+    for j in range(10):
+        if not succ: break
+        block = image_download(url)
+        if not block:
+            log(f"分块{i + 1}/{nblocks}第{j + 1}次下载失败")
+            if j == 9: succ = False
+            continue
+        block = encoder.decode(block)
+        if calc_sha1(block) == block_dict['sha1']:
+            with lock:
+                f.seek(offset)
+                f.write(block)
+            log(f"分块{i + 1}/{nblocks}下载完毕")
+            break
+        else:
+            log(f"分块{i + 1}/{nblocks}校验未通过")
+            if j == 9: succ = False
             
 
 def download_handle(args):
