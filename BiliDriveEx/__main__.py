@@ -190,13 +190,13 @@ def download_handle(args):
     
     mode = "r+b" if os.path.exists(file_name) else "wb"
     with open(file_name, mode) as f:
-        for i in range(nblocks):
+        for i, block_dict in enumerate(meta_dict['block']):
             offset = block_offset(meta_dict, i)
-            hdl = trpool.submit(tr_download, i, meta_dict['block'][i], f, offset)
+            hdl = trpool.submit(tr_download, i, block_dict, f, offset)
             hdls.append(hdl)
         for h in hdls: h.result()
         if not succ: return
-        f.truncate(sum(block['size'] for block in meta_dict['block']))
+        f.truncate(meta_dict['size'])
     
     log(f"{os.path.basename(file_name)} ({size_string(meta_dict['size'])}) 下载完毕, 用时{time.time() - start_time:.1f}秒, 平均速度{size_string(meta_dict['size'] / (time.time() - start_time))}/s")
     sha1 = calc_sha1(read_in_chunk(file_name))
@@ -223,6 +223,19 @@ def history_handle(args):
             print(f"{' ' * len(prefix)} META URL -> {api.real2meta(meta_dict['url'])}")
     else:
         print(f"暂无历史记录")
+
+def interact_mode(parser, subparsers):
+    subparsers.add_parser("help", help="show this help message").set_defaults(func=lambda _: parser.parse_args(["--help"]).func())
+    subparsers.add_parser("version", help="show program's version number").set_defaults(func=lambda _: parser.parse_args(["--version"]).func())
+    subparsers.add_parser("exit", help="exit program").set_defaults(func=lambda _: os._exit(0))
+    parser.print_help()
+    while True:
+        try:
+            args = shlex.split(input("BiliDriveEx > "))
+            args = parser.parse_args(args)
+            args.func(args)
+        except:
+            pass
 
 def main():
     signal.signal(signal.SIGINT, lambda signum, frame: os.kill(os.getpid(), 9))
@@ -260,27 +273,12 @@ def main():
     info_parser.set_defaults(func=info_handle)
     history_parser = subparsers.add_parser("history", help="show upload history")
     history_parser.set_defaults(func=history_handle)
-    shell = False
-    while True:
-        if shell:
-            args = shlex.split(input("BiliDriveEx > "))
-            try:
-                args = parser.parse_args(args)
-                args.func(args)
-            except:
-                pass
-        else:
-            args = parser.parse_args()
-            try:
-                args.func(args)
-                break
-            except AttributeError as ex:
-                traceback.print_exc(file=sys.stdout)
-                shell = True
-                subparsers.add_parser("help", help="show this help message").set_defaults(func=lambda _: parser.parse_args(["--help"]).func())
-                subparsers.add_parser("version", help="show program's version number").set_defaults(func=lambda _: parser.parse_args(["--version"]).func())
-                subparsers.add_parser("exit", help="exit program").set_defaults(func=lambda _: os._exit(0))
-                parser.print_help()
+    
+    if len(sys.argv) != 1:
+        args = parser.parse_args()
+        args.func(args)
+    else:
+        interact_mode(parser, subparsers)
 
 if __name__ == "__main__":
     main()
