@@ -9,7 +9,7 @@ import rsa
 import time
 import re
 from urllib import parse
-from BiliDriveEx.util import *
+from CDNDrive.util import *
 
 class Bilibili:
     app_key = "1d8b6e7d45233436"

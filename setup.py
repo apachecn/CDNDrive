@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import setuptools
-import BiliDriveEx
+import CDNDrive
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
@@ -11,11 +11,11 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
     install_requires = fh.read().splitlines()
 
 setuptools.setup(
-    name="BiliDriveEx",
-    version=BiliDriveEx.__version__,
-    url="https://github.com/apachecn/BiliDriveEx",
-    author=BiliDriveEx.__author__,
-    author_email=BiliDriveEx.__email__,
+    name="CDNDrive",
+    version=CDNDrive.__version__,
+    url="https://github.com/apachecn/CDNDrive",
+    author=CDNDrive.__author__,
+    author_email=CDNDrive.__email__,
     classifiers=[
         "Development Status :: 4 - Beta",
         "Environment :: Console",
@@ -53,8 +53,8 @@ setuptools.setup(
     python_requires=">=3.6",
     entry_points={
         'console_scripts': [
-            "BiliDriveEx=BiliDriveEx.__main__:main",
-            "bdex=BiliDriveEx.__main__:main",
+            "CDNDrive=CDNDrive.__main__:main",
+            "bdex=CDNDrive.__main__:main",
         ],
     },
     packages=setuptools.find_packages(),

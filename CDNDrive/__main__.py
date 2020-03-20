@@ -17,10 +17,10 @@ import time
 import traceback
 import types
 from concurrent.futures import ThreadPoolExecutor
-from BiliDriveEx import __version__
-from BiliDriveEx.bilibili import Bilibili
-from BiliDriveEx.encoder import Encoder
-from BiliDriveEx.util import *
+from CDNDrive import __version__
+from CDNDrive.bilibili import Bilibili
+from CDNDrive.encoder import Encoder
+from CDNDrive.util import *
 
 encoder = Encoder()
 api = Bilibili()
@@ -231,7 +231,7 @@ def interact_mode(parser, subparsers):
     parser.print_help()
     while True:
         try:
-            args = shlex.split(input("BiliDriveEx > "))
+            args = shlex.split(input("CDNDrive > "))
             args = parser.parse_args(args)
             args.func(args)
         except:
@@ -239,8 +239,8 @@ def interact_mode(parser, subparsers):
 
 def main():
     signal.signal(signal.SIGINT, lambda signum, frame: os.kill(os.getpid(), 9))
-    parser = argparse.ArgumentParser(prog="BiliDriveEx", description="Make Bilibili A Great Cloud Storage!", formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("-v", "--version", action="version", version=f"BiliDriveEx version: {__version__}")
+    parser = argparse.ArgumentParser(prog="CDNDrive", description="Make Bilibili A Great Cloud Storage!", formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("-v", "--version", action="version", version=f"CDNDrive version: {__version__}")
     subparsers = parser.add_subparsers()
     
     login_parser = subparsers.add_parser("login", help="log in to bilibili")
