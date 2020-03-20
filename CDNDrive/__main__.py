@@ -6,6 +6,7 @@ import hashlib
 import json
 import math
 import os
+from os import path
 import re
 import requests
 import shlex
@@ -22,12 +23,24 @@ from CDNDrive.drivers import *
 from CDNDrive.encoders import *
 from CDNDrive.util import *
 
-encoder = encoders['bili']()
-api = drivers['bili']()
+encoder = None
+api = None
 
 succ = True
 nblocks = 0
 lock = threading.Lock()
+
+def load_api_by_prefix(s):
+    global api
+    global encoder
+
+    prefix = s.split('://')[0]
+    if prefix not in prefixes:
+        return False
+    site = prefixes[prefix]
+    api = drivers[site]
+    encoder = encoders[site]
+    return True
 
 def fetch_meta(s):
     url = api.meta2real(s)
@@ -38,6 +51,9 @@ def fetch_meta(s):
     return meta_dict
 
 def login_handle(args):
+    global api
+    
+    api = drivers[args.site]
     r = api.login(args.username, args.password)
     if r['code'] != 0:
         log(f"登录失败：{r['message']}")
@@ -47,12 +63,18 @@ def login_handle(args):
     else: log("用户信息获取失败")
 
 def cookies_handle(args):
+    global api
+    
+    api = drivers[args.site]
     api.set_cookies(args.cookies)
     info = api.get_user_info()
     if info: log(info)
     else: log("用户信息获取失败")
 
 def userinfo_handle(args):
+    global api
+    
+    api = drivers[args.site]
     info = api.get_user_info()
     if info: log(info)
     else: log("用户未登录")
@@ -78,18 +100,23 @@ def tr_upload(i, block, block_dict):
             if j == 9: succ = False
     
 def upload_handle(args):
+    global api
+    global encoder
     global succ
     global nblocks
 
+    api = drivers[args.site]
+    encoder = encoders[args.site]
     start_time = time.time()
     file_name = args.file
-    if not os.path.exists(file_name):
+    
+    if not path.exists(file_name):
         log(f"文件{file_name}不存在")
         return
-    if os.path.isdir(file_name):
+    if path.isdir(file_name):
         log("暂不支持上传文件夹")
         return
-    log(f"上传: {os.path.basename(file_name)} ({size_string(os.path.getsize(file_name))})")
+    log(f"上传: {path.basename(file_name)} ({size_string(path.getsize(file_name))})")
     first_4mb_sha1 = calc_sha1(read_in_chunk(file_name, size=4 * 1024 * 1024, cnt=1))
     history = read_history()
     if first_4mb_sha1 in history:
@@ -104,7 +131,7 @@ def upload_handle(args):
         
     log(f"线程数: {args.thread}")
     succ = True
-    nblocks = math.ceil(os.path.getsize(file_name) / (args.block_size * 1024 * 1024))
+    nblocks = math.ceil(path.getsize(file_name) / (args.block_size * 1024 * 1024))
     block_dicts = [{} for _ in range(nblocks)]
     trpool = ThreadPoolExecutor(args.thread)
     hdls = []
@@ -119,8 +146,8 @@ def upload_handle(args):
     sha1 = calc_sha1(read_in_chunk(file_name))
     meta_dict = {
         'time': int(time.time()),
-        'filename': os.path.basename(file_name),
-        'size': os.path.getsize(file_name),
+        'filename': path.basename(file_name),
+        'size': path.getsize(file_name),
         'sha1': sha1,
         'block': block_dicts,
     }
@@ -166,6 +193,9 @@ def download_handle(args):
     global succ
     global nblocks
 
+    if not load_api_by_prefix(args.meta):
+        log("元数据解析失败")
+        return
     start_time = time.time()
     meta_dict = fetch_meta(args.meta)
     if not meta_dict:
@@ -173,10 +203,10 @@ def download_handle(args):
         return
 
     file_name = args.file if args.file else meta_dict['filename']
-    log(f"下载: {os.path.basename(file_name)} ({size_string(meta_dict['size'])}), 共有{len(meta_dict['block'])}个分块, 上传于{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(meta_dict['time']))}")
+    log(f"下载: {path.basename(file_name)} ({size_string(meta_dict['size'])}), 共有{len(meta_dict['block'])}个分块, 上传于{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(meta_dict['time']))}")
 
-    if os.path.exists(file_name):
-        if os.path.getsize(file_name) == meta_dict['size'] and calc_sha1(read_in_chunk(file_name)) == meta_dict['sha1']:
+    if path.exists(file_name):
+        if path.getsize(file_name) == meta_dict['size'] and calc_sha1(read_in_chunk(file_name)) == meta_dict['sha1']:
             log("文件已存在, 且与服务器端内容一致")
             return file_name
         if not args.force and not ask_overwrite():
@@ -188,7 +218,7 @@ def download_handle(args):
     trpool = ThreadPoolExecutor(args.thread)
     hdls = []
     
-    mode = "r+b" if os.path.exists(file_name) else "wb"
+    mode = "r+b" if path.exists(file_name) else "wb"
     with open(file_name, mode) as f:
         for i, block_dict in enumerate(meta_dict['block']):
             offset = block_offset(meta_dict, i)
@@ -198,7 +228,7 @@ def download_handle(args):
         if not succ: return
         f.truncate(meta_dict['size'])
     
-    log(f"{os.path.basename(file_name)} ({size_string(meta_dict['size'])}) 下载完毕, 用时{time.time() - start_time:.1f}秒, 平均速度{size_string(meta_dict['size'] / (time.time() - start_time))}/s")
+    log(f"{path.basename(file_name)} ({size_string(meta_dict['size'])}) 下载完毕, 用时{time.time() - start_time:.1f}秒, 平均速度{size_string(meta_dict['size'] / (time.time() - start_time))}/s")
     sha1 = calc_sha1(read_in_chunk(file_name))
     if sha1 == meta_dict['sha1']:
         log("文件校验通过")
@@ -208,6 +238,9 @@ def download_handle(args):
         return
 
 def info_handle(args):
+    if not load_api_by_prefix(args.meta):
+        log("元数据解析失败")
+        return
     meta_dict = fetch_meta(args.meta)
     if meta_dict:
         print_meta(meta_dict)
@@ -244,18 +277,22 @@ def main():
     subparsers = parser.add_subparsers()
     
     login_parser = subparsers.add_parser("login", help="log in to bilibili")
-    login_parser.add_argument("username", help="your bilibili username")
-    login_parser.add_argument("password", help="your bilibili password")
+    login_parser.add_argument("site", help="site", choices=drivers.keys())
+    login_parser.add_argument("username", help="username")
+    login_parser.add_argument("password", help="password")
     login_parser.set_defaults(func=login_handle)
     
     cookies_parser = subparsers.add_parser("cookies", help="set cookies to bilibili")
-    cookies_parser.add_argument("cookies", help="your bilibili cookies")
+    cookies_parser.add_argument("site", help="site", choices=drivers.keys())
+    cookies_parser.add_argument("cookies", help="cookies")
     cookies_parser.set_defaults(func=cookies_handle)
 
     userinfo_parser = subparsers.add_parser("userinfo", help="get userinfo")
+    userinfo_parser.add_argument("site", help="site", choices=drivers.keys())
     userinfo_parser.set_defaults(func=userinfo_handle)
     
     upload_parser = subparsers.add_parser("upload", help="upload a file")
+    upload_parser.add_argument("site", help="site", choices=drivers.keys())
     upload_parser.add_argument("file", help="name of the file to upload")
     upload_parser.add_argument("-b", "--block-size", default=4, type=int, help="block size in MB")
     upload_parser.add_argument("-t", "--thread", default=4, type=int, help="upload thread number")

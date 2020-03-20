@@ -1,10 +1,10 @@
 from .BiliApi import BiliApi
 
 drivers = {
-    'bili': BiliApi,
+    'bili': BiliApi(),
 }
 
-drivers_by_prefix = {
-    'bdrive': BiliApi,
-    'bdex': BiliApi,
+prefixes = {
+    'bdrive': 'bili',
+    'bdex': 'bili',
 }
