@@ -54,7 +54,7 @@ setuptools.setup(
     entry_points={
         'console_scripts': [
             "CDNDrive=CDNDrive.__main__:main",
-            "bdex=CDNDrive.__main__:main",
+            "cdrive=CDNDrive.__main__:main",
         ],
     },
     packages=setuptools.find_packages(),
