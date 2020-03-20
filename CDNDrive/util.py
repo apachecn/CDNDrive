@@ -97,3 +97,21 @@ def block_offset(meta_dict, i):
     
 def ask_overwrite():
     return (input(f"文件已存在, 是否覆盖? [y/N] ") in ["y", "Y"])
+    
+def load_cookies(site=None):
+    fname = path.join(bundle_dir, "cookies.json")
+    if not path.exists(fname):
+        return {}
+    with open(fname, encoding="utf-8") as f:
+        cookies = json.loads(f.read())
+    if not site: 
+        return cookies
+    else: 
+        return cookies.get(site, {})
+
+def save_cookies(site, cookies):
+    fname = path.join(bundle_dir, "cookies.json")
+    full_cookies = load_cookies()
+    full_cookies[site] = cookies
+    with open(fname, "w", encoding="utf-8") as f:
+        f.write(json.dumps(full_cookies))

@@ -22,7 +22,7 @@ class Bilibili:
     
     def __init__(self):
         self.cookies = {}
-        self.load_cookies()
+        self.cookies = load_cookies('bili')
         
     def meta2real(self, url):
         if re.match(r"^bdex://[a-fA-F0-9]{40}$", url):
@@ -46,7 +46,7 @@ class Bilibili:
             kv = kv.split('=')
             if len(kv) != 2: continue
             self.cookies[kv[0]] = kv[1]
-        self.save_cookies()
+        save_cookies('bili', self.cookies)
             
     
     # 识别验证码
@@ -54,7 +54,8 @@ class Bilibili:
         url = "https://bili.dev:2233/captcha"
         payload = {'image': base64.b64encode(image).decode("utf-8")}
         try:
-            j = request_retry("post", url, 
+            j = request_retry(
+                "post", url, 
                 headers=Bilibili.default_hdrs,
                 json=payload
             ).json()
@@ -77,7 +78,8 @@ class Bilibili:
             'sign': self.calc_sign(f"appkey={Bilibili.app_key}"),
         }
         try:
-            r = request_retry("post", url, data=payload, 
+            r = request_retry(
+                "post", url, data=payload, 
                 headers=Bilibili.default_hdrs,
                 cookies=self.cookies, retry=999999
             )
@@ -111,7 +113,8 @@ class Bilibili:
         headers.update({'Content-type': "application/x-www-form-urlencoded"})
         
         try:
-            j = request_retry("POST", url, data=payload, 
+            j = request_retry(
+                "POST", url, data=payload, 
                 headers=headers, 
                 cookies=self.cookies
             ).json()
@@ -122,7 +125,7 @@ class Bilibili:
             self.cookies = {}
             for cookie in j['data']['cookie_info']['cookies']:
                 self.cookies[cookie['name']] = cookie['value']
-            self.save_cookies()
+            save_cookies('bili', self.cookies)
             
         return j
     
@@ -130,7 +133,8 @@ class Bilibili:
     def get_captcha(self):
         url = f"https://passport.bilibili.com/captcha"
         try:
-            img = request_retry('GET', url, 
+            img = request_retry(
+                'GET', url, 
                 headers=Bilibili.default_hdrs, 
                 cookies=self.cookies
             ).content
@@ -168,7 +172,8 @@ class Bilibili:
         })
         
         try:
-            j = request_retry("get", url, 
+            j = request_retry(
+                "get", url, 
                 headers=headers, 
                 cookies=self.cookies
             ).json()
@@ -203,16 +208,6 @@ class Bilibili:
         else:
             return info
             
-    def save_cookies(self):
-        with open(os.path.join(bundle_dir, "cookies.json"), "w", encoding="utf-8") as f:
-            f.write(json.dumps(self.cookies, ensure_ascii=False, indent=2))
-            
-    def load_cookies(self):
-        try:
-            with open(os.path.join(bundle_dir, "cookies.json"), "r", encoding="utf-8") as f:
-                self.cookies = json.loads(f.read())
-        except:
-            pass
     
     # 图片是否已存在
     def exist(self, sha1):
@@ -242,7 +237,8 @@ class Bilibili:
             'category': "daily",
         }
         try:
-            r = requests.post(url, data=data, 
+            r = request_retry(
+                'POST', url, data=data, 
                 headers=headers, 
                 cookies=self.cookies, 
                 files=files, timeout=300
