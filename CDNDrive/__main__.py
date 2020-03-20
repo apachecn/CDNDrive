@@ -18,12 +18,12 @@ import traceback
 import types
 from concurrent.futures import ThreadPoolExecutor
 from CDNDrive import __version__
-from CDNDrive.bilibili import Bilibili
-from CDNDrive.encoder import Encoder
+from CDNDrive.drivers import *
+from CDNDrive.encoders import *
 from CDNDrive.util import *
 
-encoder = Encoder()
-api = Bilibili()
+encoder = encoders['bili']()
+api = drivers['bili']()
 
 succ = True
 nblocks = 0
