@@ -24,7 +24,7 @@ class CsdnApi:
         self.cookies = load_cookies('csdn')
         
     def meta2real(self, url):
-        if re.match(r"^csdrive://[\d{17}$", url):
+        if re.match(r"^csdrive://\d{17}$", url):
             return self.default_url(self.extract_hash(url))
         else:
             return None

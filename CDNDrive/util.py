@@ -46,18 +46,22 @@ def image_download(url):
     return b"".join(content)
     
 
-def read_history():
-    try:
-        with open(path.join(bundle_dir, "history.json"), "r", encoding="utf-8") as f:
-            history = json.loads(f.read())
-    except:
-        history = {}
-    return history
+def read_history(site=None):
+    fname = path.join(bundle_dir, "history.json")
+    if not path.exists(fname):
+        return {}
+    with open(fname, encoding="utf-8") as f:
+        history = json.loads(f.read())
+    if not site:
+        return history
+    else:
+        return history.get(site, {})
 
-def write_history(first_4mb_sha1, meta_dict, url):
+def write_history(first_4mb_sha1, meta_dict, site, url):
     history = read_history()
-    history[first_4mb_sha1] = meta_dict
-    history[first_4mb_sha1]['url'] = url
+    history.setdefault(site, {})
+    history[site][first_4mb_sha1] = meta_dict
+    history[site][first_4mb_sha1]['url'] = url
     with open(os.path.join(bundle_dir, "history.json"), "w", encoding="utf-8") as f:
         f.write(json.dumps(history, ensure_ascii=False, indent=2))
     

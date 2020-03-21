@@ -117,7 +117,7 @@ def upload_handle(args):
         return
     log(f"上传: {path.basename(file_name)} ({size_string(path.getsize(file_name))})")
     first_4mb_sha1 = calc_sha1(read_in_chunk(file_name, size=4 * 1024 * 1024, cnt=1))
-    history = read_history()
+    history = read_history(args.site)
     if first_4mb_sha1 in history:
         url = history[first_4mb_sha1]['url']
         log(f"文件已于{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(history[first_4mb_sha1]['time']))}上传, 共有{len(history[first_4mb_sha1]['block'])}个分块")
@@ -158,7 +158,7 @@ def upload_handle(args):
         log("元数据上传完毕")
         log(f"{meta_dict['filename']} ({size_string(meta_dict['size'])}) 上传完毕, 用时{time.time() - start_time:.1f}秒, 平均速度{size_string(meta_dict['size'] / (time.time() - start_time))}/s")
         log(f"META URL -> {api.real2meta(url)}")
-        write_history(first_4mb_sha1, meta_dict, url)
+        write_history(first_4mb_sha1, meta_dict, args.site, url)
         return url
     else:
         log(f"元数据上传失败：{r.get('message')}")
@@ -247,14 +247,18 @@ def info_handle(args):
         log("元数据解析失败")
 
 def history_handle(args):
-    history = read_history()
-    if history:
-        for index, meta_dict in enumerate(history.values()):
-            prefix = f"[{index + 1}]"
+    all_history = read_history()
+    if len(all_history) == 0:
+        print(f"暂无历史记录")
+        return
+    idx = 0
+    for site, history in all_history.items():
+        for meta_dict in history.values():
+            prefix = f"[{idx + 1}]"
+            idx += 1
             print(f"{prefix} {meta_dict['filename']} ({size_string(meta_dict['size'])}), 共有{len(meta_dict['block'])}个分块, 上传于{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(meta_dict['time']))}")
             print(f"{' ' * len(prefix)} META URL -> {api.real2meta(meta_dict['url'])}")
-    else:
-        print(f"暂无历史记录")
+        
 
 def interact_mode(parser, subparsers):
     subparsers.add_parser("help", help="show this help message").set_defaults(func=lambda _: parser.parse_args(["--help"]).func())
