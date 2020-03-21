@@ -4,4 +4,5 @@ encoders = {
     'bili': PngEncoder(),
     'baijia': PngEncoder(),
     'csdn': PngEncoder(),
+    'sohu': PngEncoder(),
 }
