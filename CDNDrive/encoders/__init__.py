@@ -5,4 +5,5 @@ encoders = {
     'baijia': PngEncoder(),
     'csdn': PngEncoder(),
     'sohu': PngEncoder(),
+    'jian': PngEncoder(),
 }
