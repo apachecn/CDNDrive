@@ -29,8 +29,8 @@ class BaijiaApi:
         else:
             return None
             
-    def real2meta(self, hash):
-        return 'bjdrive://' + hash
+    def real2meta(self, url):
+        return 'bjdrive://' + self.extract_hash(url)
         
     def login(self, un, pw):
         return {
