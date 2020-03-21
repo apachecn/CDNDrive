@@ -11,8 +11,18 @@ import time
 import tempfile
 
 bundle_dir = tempfile.gettempdir()
+cookie_fname = 'cdrive_cookies.json'
+history_fname = 'cdrive_history.json'
 
-size_string = lambda byte: f"{byte / 1024 / 1024 / 1024:.2f} GB" if byte > 1024 * 1024 * 1024 else f"{byte / 1024 / 1024:.2f} MB" if byte > 1024 * 1024 else f"{byte / 1024:.2f} KB" if byte > 1024 else f"{int(byte)} B"
+def size_string(byte):
+    if byte > 1024 * 1024 * 1024:
+        return f"{byte / 1024 / 1024 / 1024:.2f} GB"
+    elif byte > 1024 * 1024:
+        return f"{byte / 1024 / 1024:.2f} MB"
+    elif byte > 1024:
+        return f"{byte / 1024:.2f} KB"
+    else:
+        return f"{int(byte)} B"
 
 def calc_hash(data, algo, hex=True):
     hasher = getattr(hashlib, algo)()
@@ -47,7 +57,7 @@ def image_download(url):
     
 
 def read_history(site=None):
-    fname = path.join(bundle_dir, "history.json")
+    fname = path.join(bundle_dir, history_fname)
     if not path.exists(fname):
         return {}
     with open(fname, encoding="utf-8") as f:
@@ -62,7 +72,7 @@ def write_history(first_4mb_sha1, meta_dict, site, url):
     history.setdefault(site, {})
     history[site][first_4mb_sha1] = meta_dict
     history[site][first_4mb_sha1]['url'] = url
-    with open(os.path.join(bundle_dir, "history.json"), "w", encoding="utf-8") as f:
+    with open(path.join(bundle_dir, history_fname), "w", encoding="utf-8") as f:
         f.write(json.dumps(history, ensure_ascii=False, indent=2))
     
 def read_in_chunk(fname, size=4 * 1024 * 1024, cnt=-1):
@@ -110,7 +120,7 @@ def ask_overwrite():
     return (input(f"文件已存在, 是否覆盖? [y/N] ") in ["y", "Y"])
     
 def load_cookies(site=None):
-    fname = path.join(bundle_dir, "cookies.json")
+    fname = path.join(bundle_dir, cookie_fname)
     if not path.exists(fname):
         return {}
     with open(fname, encoding="utf-8") as f:
@@ -121,9 +131,9 @@ def load_cookies(site=None):
         return cookies.get(site, {})
 
 def save_cookies(site, cookies):
-    fname = path.join(bundle_dir, "cookies.json")
     full_cookies = load_cookies()
     full_cookies[site] = cookies
+    fname = path.join(bundle_dir, cookie_fname)
     with open(fname, "w", encoding="utf-8") as f:
         f.write(json.dumps(full_cookies))
         
