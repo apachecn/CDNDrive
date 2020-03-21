@@ -217,7 +217,7 @@ class BiliApi:
     def image_upload(self, data):
         sha1 = calc_sha1(data)
         url = self.exist(sha1)
-        if url: return {'code': 0, 'data': {'image_url': url}}
+        if url: return {'code': 0, 'data': url}
         
         url = "https://api.vc.bilibili.com/api/v1/drawImage/upload"
         headers = BiliApi.default_hdrs.copy()

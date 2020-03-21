@@ -56,8 +56,8 @@ class BaijiaApi:
         
     def image_upload(self, img):
         md5 = calc_md5(img)
-        if self.exist(md5):
-            return self.default_url(md5)
+        url = self.exist(md5)
+        if url: return {'code': 0, 'data': url}
             
         url = 'https://rsbjh.baidu.com/builderinner/api/content/file/upload?is_waterlog=0'
         files = {
