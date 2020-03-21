@@ -247,18 +247,20 @@ def info_handle(args):
         log("元数据解析失败")
 
 def history_handle(args):
+    global api
+
     all_history = read_history()
     if len(all_history) == 0:
         print(f"暂无历史记录")
         return
     idx = 0
     for site, history in all_history.items():
+        api = drivers[site]
         for meta_dict in history.values():
-            prefix = f"[{idx + 1}]"
+            prefix = f"[{idx + 1}] "
+            meta_dict['url'] = api.real2meta(meta_dict['url'])
+            print_history_meta(meta_dict, prefix)
             idx += 1
-            print(f"{prefix} {meta_dict['filename']} ({size_string(meta_dict['size'])}), 共有{len(meta_dict['block'])}个分块, 上传于{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(meta_dict['time']))}")
-            print(f"{' ' * len(prefix)} META URL -> {api.real2meta(meta_dict['url'])}")
-        
 
 def interact_mode(parser, subparsers):
     subparsers.add_parser("help", help="show this help message").set_defaults(func=lambda _: parser.parse_args(["--help"]).func())

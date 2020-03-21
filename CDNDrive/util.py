@@ -89,14 +89,19 @@ def request_retry(method, url, retry=10, **kwargs):
 get_retry = lambda url, retry=10, **kwargs: request_retry('GET', url, retry, **kwargs)
 post_retry = lambda url, retry=10, **kwargs: request_retry('POST', url, retry, **kwargs)
 
-def print_meta(meta_dict):
-    print(f"文件名: {meta_dict['filename']}")
-    print(f"大小: {size_string(meta_dict['size'])}")
-    print(f"SHA-1: {meta_dict['sha1']}")
-    print(f"上传时间: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(meta_dict['time']))}")
-    print(f"分块数: {len(meta_dict['block'])}")
+def print_meta(meta_dict, prefix=""):
+    pad = ' ' * len(prefix)
+    print(f"{prefix}文件名: {meta_dict['filename']}")
+    print(f"{pad}大小: {size_string(meta_dict['size'])}")
+    print(f"{pad}SHA-1: {meta_dict['sha1']}")
+    print(f"{pad}上传时间: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(meta_dict['time']))}")
+    print(f"{pad}分块数: {len(meta_dict['block'])}")
     for index, block_dict in enumerate(meta_dict['block']):
-        print(f"分块{index + 1} ({size_string(block_dict['size'])}) URL: {block_dict['url']}")
+        print(f"{pad}分块{index + 1} ({size_string(block_dict['size'])}) URL: {block_dict['url']}")
+        
+def print_history_meta(meta_dict, prefix=""):
+    print_meta(meta_dict, prefix)
+    print(f"{' ' * len(prefix)}META URL: {meta_dict['url']}")
         
 def block_offset(meta_dict, i):
     return sum(meta_dict['block'][j]['size'] for j in range(i))
