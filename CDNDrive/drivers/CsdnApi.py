@@ -18,18 +18,19 @@ class CsdnApi:
     }
 
     default_url = lambda self, hash: f"https://img-blog.csdnimg.cn/{hash}.png"
-    extract_hash = lambda self, s: re.findall(r"\d{17}", s)[0]    
+    extract_hash = lambda self, s: re.findall(r"\d{14,17}", s)[0]    
 
     def __init__(self):
         self.cookies = load_cookies('csdn')
         
     def meta2real(self, url):
-        if re.match(r"^csdrive://\d{17}$", url):
+        if re.match(r"^csdrive://\d{14,17}$", url):
             return self.default_url(self.extract_hash(url))
         else:
             return None
             
     def real2meta(self, url):
+        print('url:', url)
         return 'csdrive://' + self.extract_hash(url)
         
     def login(self, un, pw):
