@@ -71,7 +71,7 @@ class BaijiaApi:
                 headers=BaijiaApi.default_hdrs,
                 cookies=self.cookies
             ).json()
-        except:
+        except Exception as ex:
             return {'code': 114514, 'message': str(ex)}
         
         j['code'] = j['errno']
