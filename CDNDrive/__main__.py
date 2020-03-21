@@ -87,9 +87,8 @@ def tr_upload(i, block, block_dict):
         if not succ: break
         r = api.image_upload(enco_block)
         if r['code'] == 0:
-            url = r['data']['image_url']
             block_dict.update({
-                'url': url,
+                'url': r['data'],
                 'size': len(block),
                 'sha1': calc_sha1(block),
             })
@@ -155,7 +154,7 @@ def upload_handle(args):
     full_meta = encoder.encode(meta)
     r = api.image_upload(full_meta)
     if r['code'] == 0:
-        url = r['data']['image_url']
+        url = r['data']
         log("元数据上传完毕")
         log(f"{meta_dict['filename']} ({size_string(meta_dict['size'])}) 上传完毕, 用时{time.time() - start_time:.1f}秒, 平均速度{size_string(meta_dict['size'] / (time.time() - start_time))}/s")
         log(f"META URL -> {api.real2meta(url)}")

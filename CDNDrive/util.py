@@ -14,16 +14,18 @@ bundle_dir = tempfile.gettempdir()
 
 size_string = lambda byte: f"{byte / 1024 / 1024 / 1024:.2f} GB" if byte > 1024 * 1024 * 1024 else f"{byte / 1024 / 1024:.2f} MB" if byte > 1024 * 1024 else f"{byte / 1024:.2f} KB" if byte > 1024 else f"{int(byte)} B"
 
-def calc_sha1(data, hex=True):
-    sha1 = hashlib.sha1()
+def calc_hash(data, algo, hex=True):
+    hasher = getattr(hashlib, algo)()
     if hasattr(data, '__iter__') and \
        type(data) is not bytes:
         for chunk in data:
-            sha1.update(chunk)
+            hasher.update(chunk)
     else:
-        sha1.update(data)
-    return sha1.hexdigest() if hex else sha1.digest()
+        hasher.update(data)
+    return hasher.hexdigest() if hex else hasher.digest()
     
+calc_sha1 = lambda data, hex=True: calc_hash(data, 'sha1', hex)
+calc_md5 = lambda data, hex=True: calc_hash(data, 'md5', hex)
     
 def image_download(url):
     headers = {
@@ -115,3 +117,11 @@ def save_cookies(site, cookies):
     full_cookies[site] = cookies
     with open(fname, "w", encoding="utf-8") as f:
         f.write(json.dumps(full_cookies))
+        
+def parse_cookies(cookie_str):
+    cookies = {}
+    for kv in cookie_str.split('; '):
+        kv = kv.split('=')
+        if len(kv) != 2: continue
+        cookies[kv[0]] = kv[1]
+    return cookies

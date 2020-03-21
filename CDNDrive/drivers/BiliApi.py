@@ -41,11 +41,7 @@ class BiliApi:
         
 
     def set_cookies(self, cookie_str):
-        self.cookies = {}
-        for kv in cookie_str.split('; '):
-            kv = kv.split('=')
-            if len(kv) != 2: continue
-            self.cookies[kv[0]] = kv[1]
+        self.cookies = parse_cookies(cookie_str)
         save_cookies('bili', self.cookies)
             
     
@@ -251,4 +247,7 @@ class BiliApi:
                 'code': r.status_code, 
                 'message': f'HTTP {r.status_code}'
             }
-        return r.json()
+        j = r.json()
+        if j['code'] == 0:
+            j['data'] = j['data']['image_url']
+        return j
