@@ -7,4 +7,5 @@ encoders = {
     'csdn': PngEncoder(),
     'sohu': PngEncoder(),
     'jian': PngEncoder(),
+    'weibo': GifEncoder(),
 }

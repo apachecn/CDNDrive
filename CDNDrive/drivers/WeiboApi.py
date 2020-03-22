@@ -30,7 +30,6 @@ class WeiboApi:
             return None
             
     def real2meta(self, url):
-        print('url:', url)
         return 'wbdrive://' + self.extract_hash(url)
         
     def login(self, un, pw):

@@ -24,7 +24,7 @@ class GifEncoder:
             
         img = Image.frombytes('L', (side, side), data)
         bio = BytesIO()
-        img.save(bio, 'gif')
+        img.save(bio, 'gif', optimize=False)
         return bio.getvalue()
 
     def decode(self, data):
