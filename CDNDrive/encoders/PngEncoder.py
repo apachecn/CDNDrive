@@ -40,24 +40,19 @@ class PngEncoder:
         return data[62:]
         
     
-    def encode_png(self, data):
-        minw = self.minw
-        minh = self.minh
-        dep = self.dep
-        mode = self.mode
-    
+    def encode_png(self, data):    
         data = struct.pack('<I', len(data)) + data
         
-        minsz = minw * minh * dep
+        minsz = self.minw * self.minh * self.dep
         if len(data) < minsz:
             data += b'\0' * (minsz - len(data))
         
-        side = math.ceil(math.sqrt(len(data) / dep))
-        total = side * side * dep
+        side = math.ceil(math.sqrt(len(data) / self.dep))
+        total = side * side * self.dep
         if len(data) < total:
             data += b'\0' * (total - len(data))
         
-        img = Image.frombytes(mode, (side, side), data)
+        img = Image.frombytes(self.mode, (side, side), data)
         bio = BytesIO()
         img.save(bio, 'png')
         return bio.getvalue()
