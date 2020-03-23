@@ -5,7 +5,7 @@ install:
     - 'pip install -r requirements.txt'
 
 script:
-    - python -m BiliDriveEx -v
+    - python -m CDNDrive -v
     
 deploy:
     -   provider: pypi
