@@ -277,17 +277,17 @@ def interact_mode(parser, subparsers):
 
 def main():
     signal.signal(signal.SIGINT, lambda signum, frame: os.kill(os.getpid(), 9))
-    parser = argparse.ArgumentParser(prog="CDNDrive", description="Make Bilibili A Great Cloud Storage!", formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(prog="CDNDrive", description="Make Picbeds Great Cloud Storages!", formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("-v", "--version", action="version", version=f"CDNDrive version: {__version__}")
     subparsers = parser.add_subparsers()
     
-    login_parser = subparsers.add_parser("login", help="log in to bilibili")
+    login_parser = subparsers.add_parser("login", help="log in to the site")
     login_parser.add_argument("site", help="site", choices=drivers.keys())
     login_parser.add_argument("username", help="username")
     login_parser.add_argument("password", help="password")
     login_parser.set_defaults(func=login_handle)
     
-    cookies_parser = subparsers.add_parser("cookies", help="set cookies to bilibili")
+    cookies_parser = subparsers.add_parser("cookies", help="set cookies to the site")
     cookies_parser.add_argument("site", help="site", choices=drivers.keys())
     cookies_parser.add_argument("cookies", help="cookies")
     cookies_parser.set_defaults(func=cookies_handle)

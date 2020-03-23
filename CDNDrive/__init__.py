@@ -1,7 +1,7 @@
 #!/usr/bin/env python3.7
 # -*- coding: utf-8 -*-
 
-"""CDNDrive 哔哩哔哩云 Ex
+"""CDNDrive
 https://github.com/apachecn/CDNDrive"""
 
 __author__ = "ApacheCN"
