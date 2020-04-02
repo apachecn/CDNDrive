@@ -4,6 +4,7 @@ from .CsdnApi import CsdnApi
 from .SohuApi import SohuApi
 from .JianApi import JianApi
 from .WeiboApi import WeiboApi
+from .AliApi import AliApi
 
 drivers = {
     'bili': BiliApi(),
@@ -12,6 +13,7 @@ drivers = {
     'sohu': SohuApi(),
     'jian': JianApi(),
     'weibo': WeiboApi(),
+    'ali': AliApi(),
 }
 
 prefixes = {
@@ -22,4 +24,5 @@ prefixes = {
     'shdrive': 'sohu',
     'jsdrive': 'jian',
     'wbdrive': 'weibo',
+    'aldrive': 'ali',
 }

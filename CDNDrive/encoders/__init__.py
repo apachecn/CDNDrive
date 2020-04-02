@@ -8,4 +8,5 @@ encoders = {
     'sohu': PngEncoder(),
     'jian': PngEncoder(),
     'weibo': GifEncoder(),
+    'ali': PngEncoder(),
 }
