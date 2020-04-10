@@ -7,6 +7,7 @@ from .WeiboApi import WeiboApi
 from .AliApi import AliApi
 from .NeteApi import NeteApi
 from .OscApi import OscApi
+from .SogouApi import SogouApi
 
 drivers = {
     'bili': BiliApi(),
@@ -18,6 +19,7 @@ drivers = {
     'ali': AliApi(),
     '163': NeteApi(),
     'osc': OscApi(),
+    'sogou': SogouApi(),
 }
 
 prefixes = {
@@ -31,4 +33,5 @@ prefixes = {
     'aldrive': 'ali',
     'nedrive': '163',
     'osdrive': 'osc',
+    'sgdrive': 'sogou',
 }

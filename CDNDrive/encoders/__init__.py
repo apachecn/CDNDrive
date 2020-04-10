@@ -11,4 +11,5 @@ encoders = {
     'ali': PngEncoder(),
     '163': PngEncoder(),
     'osc': PngEncoder(),
+    'sogou': PngEncoder(),
 }
