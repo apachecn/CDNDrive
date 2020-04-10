@@ -9,4 +9,5 @@ encoders = {
     'jian': PngEncoder(),
     'weibo': GifEncoder(),
     'ali': PngEncoder(),
+    '163': PngEncoder(),
 }

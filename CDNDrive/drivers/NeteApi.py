@@ -24,7 +24,7 @@ class NeteApi:
         self.cookies = load_cookies('163')
         
     def meta2real(self, url):
-        if re.match(r"^shdrive://\d{4}/\d{4}/\w{32}$", url):
+        if re.match(r"^nedrive://\d{4}/\d{4}/\w{32}$", url):
             return self.default_url(self.extract_hash(url))
         else:
             return None

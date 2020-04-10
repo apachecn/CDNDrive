@@ -5,6 +5,7 @@ from .SohuApi import SohuApi
 from .JianApi import JianApi
 from .WeiboApi import WeiboApi
 from .AliApi import AliApi
+from .NeteApi import NeteApi
 
 drivers = {
     'bili': BiliApi(),
@@ -14,6 +15,7 @@ drivers = {
     'jian': JianApi(),
     'weibo': WeiboApi(),
     'ali': AliApi(),
+    '163': NeteApi(),
 }
 
 prefixes = {
@@ -25,4 +27,5 @@ prefixes = {
     'jsdrive': 'jian',
     'wbdrive': 'weibo',
     'aldrive': 'ali',
+    'nedrive': '163',
 }
