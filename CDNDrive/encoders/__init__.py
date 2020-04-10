@@ -10,4 +10,5 @@ encoders = {
     'weibo': GifEncoder(),
     'ali': PngEncoder(),
     '163': PngEncoder(),
+    'osc': PngEncoder(),
 }

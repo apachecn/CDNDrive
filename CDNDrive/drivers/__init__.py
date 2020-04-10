@@ -6,6 +6,7 @@ from .JianApi import JianApi
 from .WeiboApi import WeiboApi
 from .AliApi import AliApi
 from .NeteApi import NeteApi
+from .OscApi import OscApi
 
 drivers = {
     'bili': BiliApi(),
@@ -16,6 +17,7 @@ drivers = {
     'weibo': WeiboApi(),
     'ali': AliApi(),
     '163': NeteApi(),
+    'osc': OscApi(),
 }
 
 prefixes = {
@@ -28,4 +30,5 @@ prefixes = {
     'wbdrive': 'weibo',
     'aldrive': 'ali',
     'nedrive': '163',
+    'osdrive': 'osc',
 }
