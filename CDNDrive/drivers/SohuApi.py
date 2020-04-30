@@ -47,7 +47,7 @@ class SohuApi:
         
     def image_upload(self, img):
             
-        url = 'https://mp.sohu.com/commons/v2/upload/file'
+        url = 'https://mp.sohu.com/commons/front/outerUpload/v2/file'
         files = {'file': (f"{time.time() * 1000}.png", img)}
         try:
             j = request_retry(
