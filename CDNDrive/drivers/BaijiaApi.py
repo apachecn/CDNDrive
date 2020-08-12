@@ -17,7 +17,7 @@ class BaijiaApi:
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36'
     }
 
-    default_url = lambda self, md5: f"http://pic.rmb.bdstatic.com/{md5}.png"
+    default_url = lambda self, md5: f"http://pic.rmb.bdstatic.com/bjh/{md5}.png"
     extract_hash = lambda self, s: re.findall(r"[a-fA-F0-9]{32}", s)[0]    
 
     def __init__(self):
