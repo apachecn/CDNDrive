@@ -17,14 +17,14 @@ class BaijiaApi:
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36'
     }
 
-    default_url = lambda self, md5: f"http://pic.rmb.bdstatic.com/bjh/{md5}.png"
-    extract_hash = lambda self, s: re.findall(r"[a-fA-F0-9]{32}", s)[0]    
+    default_url = lambda self, md5: f"http://pic.rmb.bdstatic.com/{md5}.png"
+    extract_hash = lambda self, s: re.findall(r"(?:bjh/){0,1}[a-fA-F0-9]{32}", s)[0]    
 
     def __init__(self):
         self.cookies = load_cookies('baidu')
         
     def meta2real(self, url):
-        if re.match(r"^bjdrive://[a-fA-F0-9]{32}$", url):
+        if re.match(r"^bjdrive://(?:bjh/){0,1}[a-fA-F0-9]{32}$", url):
             return self.default_url(self.extract_hash(url))
         else:
             return None
