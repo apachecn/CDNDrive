@@ -45,7 +45,7 @@ def load_api_by_prefix(s):
 def fetch_meta(s):
     url = api.meta2real(s)
     if not url: return None
-    full_meta = image_download(url)
+    full_meta = api.image_download(url)
     if not full_meta: return None
     meta_dict = json.loads(encoder.decode(full_meta).decode("utf-8"))
     return meta_dict
@@ -171,7 +171,7 @@ def tr_download(i, block_dict, f, offset):
     url = block_dict['url']
     for j in range(10):
         if not succ: break
-        block = image_download(url)
+        block = api.image_download(url)
         if not block:
             log(f"分块{i + 1}/{nblocks}第{j + 1}次下载失败")
             if j == 9: succ = False

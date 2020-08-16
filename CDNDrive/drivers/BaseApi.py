@@ -17,7 +17,7 @@ class BaseApi:
     def get_user_info(self, fmt=True):
         return '获取用户信息功能尚未实现'
         
-    def image_download(url):
+    def image_download(self, url):
         return image_download(url)
         
     
