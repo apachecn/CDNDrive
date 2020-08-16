@@ -14,10 +14,6 @@ from .BaseApi import BaseApi
 
 class SogouApi(BaseApi):
 
-    default_hdrs = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36'
-    }
-
     default_url = lambda self, hash: f"http://img01.sogoucdn.com/app/a/{hash}"
     extract_hash = lambda self, s: re.findall(r"\d+/[A-Za-z0-9]{32}", s)[0]    
 
@@ -34,18 +30,9 @@ class SogouApi(BaseApi):
     def real2meta(self, url):
         return 'sgdrive://' + self.extract_hash(url)
         
-    def login(self, un, pw):
-        return {
-            'code': 0,
-            'message': '该 API 无需登录'
-        }
-        
     def set_cookies(self, cookie_str):
         self.cookies = parse_cookies(cookie_str)
         save_cookies('sogou', self.cookies)
-        
-    def get_user_info(self, fmt=True):
-        return '该 API 无需登录'
         
     def image_upload(self, img):
             

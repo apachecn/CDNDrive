@@ -14,10 +14,6 @@ from .BaseApi import BaseApi
 
 class JianApi(BaseApi):
 
-    default_hdrs = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36'
-    }
-
     default_url = lambda self, hash: f"https://upload-images.jianshu.io/upload_images/{hash}.png"
     extract_hash = lambda self, s: re.findall(r"\d{6}-[A-Fa-f0-9]{16}", s)[0]    
 
@@ -34,18 +30,9 @@ class JianApi(BaseApi):
     def real2meta(self, url):
         return 'jsdrive://' + self.extract_hash(url)
         
-    def login(self, un, pw):
-        return {
-            'code': 114514,
-            'message': '功能尚未实现，请使用 Cookie 登录'
-        }
-        
     def set_cookies(self, cookie_str):
         self.cookies = parse_cookies(cookie_str)
         save_cookies('jian', self.cookies)
-        
-    def get_user_info(self, fmt=True):
-        return '获取用户信息功能尚未实现'
         
     def image_upload(self, img):
         

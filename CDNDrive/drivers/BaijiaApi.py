@@ -14,10 +14,6 @@ from .BaseApi import BaseApi
 
 class BaijiaApi(BaseApi):
 
-    default_hdrs = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36'
-    }
-
     default_url = lambda self, md5: f"http://pic.rmb.bdstatic.com/{md5}.png"
     extract_hash = lambda self, s: re.findall(r"[a-fA-F0-9]{32}", s)[0]    
 
@@ -34,18 +30,9 @@ class BaijiaApi(BaseApi):
     def real2meta(self, url):
         return 'bjdrive://' + self.extract_hash(url)
         
-    def login(self, un, pw):
-        return {
-            'code': 114514,
-            'message': '功能尚未实现，请使用 Cookie 登录'
-        }
-        
     def set_cookies(self, cookie_str):
         self.cookies = parse_cookies(cookie_str)
         save_cookies('baidu', self.cookies)
-        
-    def get_user_info(self, fmt=True):
-        return '获取用户信息功能尚未实现'
         
     # 图片是否已存在
     def exist(self, md5):
