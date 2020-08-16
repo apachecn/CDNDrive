@@ -14,8 +14,8 @@ from .BaseApi import BaseApi
 
 class SohuApi(BaseApi):
 
-    default_url = lambda self, hash: f"http://5b0988e595225.cdn.sohucs.com/images/{hash}.png"
-    extract_hash = lambda self, s: re.findall(r"\d{8}/[A-Fa-f0-9]{32}", s)[0]    
+    default_url = lambda self, hash: f"http://p1.itc.cn/images{hash}.png"
+    extract_hash = lambda self, s: re.findall(r"\d{2}/\d{8}/[A-Fa-f0-9]{32}", s)[0]    
 
     def __init__(self):
         super().__init__()
@@ -23,25 +23,44 @@ class SohuApi(BaseApi):
         
     def meta2real(self, url):
         if re.match(r"^shdrive://\d{8}/[A-Fa-f0-9]{32}$", url):
+            hash = re.findall(r"\d{8}/[A-Fa-f0-9]{32}", url)[0]
+            return f'http://5b0988e595225.cdn.sohucs.com/images/{hash}.png'
+        elif re.match(r'^shdrive2://\d{2}/\d{8}/[A-Fa-f0-9]{32}$', url):
             return self.default_url(self.extract_hash(url))
         else:
             return None
             
     def real2meta(self, url):
-        return 'shdrive://' + self.extract_hash(url)
+        return 'shdrive2://' + self.extract_hash(url)
         
     def set_cookies(self, cookie_str):
         self.cookies = parse_cookies(cookie_str)
         save_cookies('sohu', self.cookies)
         
     def image_upload(self, img):
+        
+        url = 'https://mp.sohu.com/mpbp/bp/account/list'
+        try:
+            j = request_retry(
+                'GET', url, 
+                headers=SohuApi.default_hdrs,
+                cookies=self.cookies
+            ).json()
+        except Exception as ex:
+            return {'code': 114514, 'message': str(ex)}
             
+        if j['code'] != 2000000:
+            return {'code': j['code'], 'message': j['msg']}
+        mpid = j['data']['data'][0]['accounts'][0]['id']
+        
         url = 'https://mp.sohu.com/commons/front/outerUpload/v2/file'
         files = {'file': (f"{time.time() * 1000}.png", img)}
+        data = {'accountId': mpid}
         try:
             j = request_retry(
                 'POST', url, 
                 files=files, 
+                data=data,
                 headers=SohuApi.default_hdrs,
                 cookies=self.cookies
             ).json()

@@ -28,6 +28,7 @@ prefixes = {
     'bjdrive': 'baijia',
     'csdrive': 'csdn',
     'shdrive': 'sohu',
+    'shdrive2': 'sohu',
     'jsdrive': 'jian',
     'wbdrive': 'weibo',
     'aldrive': 'ali',
