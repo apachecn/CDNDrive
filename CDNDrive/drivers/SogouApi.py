@@ -10,8 +10,9 @@ import time
 import re
 from urllib.parse import unquote
 from CDNDrive.util import *
+from .BaseApi import BaseApi
 
-class SogouApi:
+class SogouApi(BaseApi):
 
     default_hdrs = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36'
@@ -21,6 +22,7 @@ class SogouApi:
     extract_hash = lambda self, s: re.findall(r"\d+/[A-Za-z0-9]{32}", s)[0]    
 
     def __init__(self):
+        super().__init__()
         self.cookies = load_cookies('sogou')
         
     def meta2real(self, url):

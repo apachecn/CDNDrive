@@ -10,8 +10,9 @@ import time
 import re
 from urllib import parse
 from CDNDrive.util import *
+from .BaseApi import BaseApi
 
-class NeteApi:
+class NeteApi(BaseApi):
 
     default_hdrs = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36'
@@ -21,6 +22,7 @@ class NeteApi:
     extract_hash = lambda self, s: re.findall(r"\d{4}/\d{4}/\w{32}", s)[0]    
 
     def __init__(self):
+        super().__init__()
         self.cookies = load_cookies('163')
         
     def meta2real(self, url):

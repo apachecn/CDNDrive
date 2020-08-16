@@ -10,8 +10,9 @@ import time
 import re
 from urllib import parse
 from CDNDrive.util import *
+from .BaseApi import BaseApi
 
-class BiliApi:
+class BiliApi(BaseApi):
     app_key = "1d8b6e7d45233436"
 
     default_hdrs = {'User-Agent': "Mozilla/5.0 BiliDroid/5.51.1 (bbcallen@gmail.com)"}
@@ -21,7 +22,7 @@ class BiliApi:
     get_cookies = lambda self: self.cookies
     
     def __init__(self):
-        self.cookies = {}
+        super().__init__()
         self.cookies = load_cookies('bili')
         
     def meta2real(self, url):

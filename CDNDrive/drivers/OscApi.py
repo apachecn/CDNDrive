@@ -10,8 +10,9 @@ import time
 import re
 from urllib import parse
 from CDNDrive.util import *
+from .BaseApi import BaseApi
 
-class OscApi:
+class OscApi(BaseApi):
 
     default_hdrs = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36'
@@ -21,6 +22,7 @@ class OscApi:
     extract_hash = lambda self, s: re.findall(r"\w{35}", s)[0]    
 
     def __init__(self):
+        super().__init__()
         self.cookies = load_cookies('osc')
         
     def meta2real(self, url):

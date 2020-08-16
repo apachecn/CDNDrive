@@ -10,17 +10,15 @@ import time
 import re
 from urllib import parse
 from CDNDrive.util import *
+from .BaseApi import BaseApi
 
-class SohuApi:
-
-    default_hdrs = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36'
-    }
+class SohuApi(BaseApi):
 
     default_url = lambda self, hash: f"http://5b0988e595225.cdn.sohucs.com/images/{hash}.png"
     extract_hash = lambda self, s: re.findall(r"\d{8}/[A-Fa-f0-9]{32}", s)[0]    
 
     def __init__(self):
+        super().__init__()
         self.cookies = load_cookies('sohu')
         
     def meta2real(self, url):
@@ -32,18 +30,9 @@ class SohuApi:
     def real2meta(self, url):
         return 'shdrive://' + self.extract_hash(url)
         
-    def login(self, un, pw):
-        return {
-            'code': 114514,
-            'message': '功能尚未实现，请使用 Cookie 登录'
-        }
-        
     def set_cookies(self, cookie_str):
         self.cookies = parse_cookies(cookie_str)
         save_cookies('sohu', self.cookies)
-        
-    def get_user_info(self, fmt=True):
-        return '获取用户信息功能尚未实现'
         
     def image_upload(self, img):
             
