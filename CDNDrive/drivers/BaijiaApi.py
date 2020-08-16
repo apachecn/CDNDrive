@@ -14,7 +14,7 @@ from .BaseApi import BaseApi
 
 class BaijiaApi(BaseApi):
 
-    default_url = lambda self, md5: f"http://pic.rmb.bdstatic.com/{md5}.png"
+    default_url = lambda self, md5: f"http://pic.rmb.bdstatic.com/bjh/{md5}.png"
     extract_hash = lambda self, s: re.findall(r"[a-fA-F0-9]{32}", s)[0]    
 
     def __init__(self):
@@ -34,11 +34,20 @@ class BaijiaApi(BaseApi):
         self.cookies = parse_cookies(cookie_str)
         save_cookies('baidu', self.cookies)
         
+    def image_download(self, url):
+        # 兼容旧式的 URL
+        if '/bjh/' in url and not self.exist_url(url):
+            url = url.replace('/bjh', '')
+        return super().image_download(url)
+        
     # 图片是否已存在
     def exist(self, md5):
         url = self.default_url(md5)
+        return self.exist_url(url)
+        
+    def exist_url(self, url):
         try:
-            r = request_retry('HEAD', url, headers=BiliApi.default_hdrs)
+            r = request_retry('HEAD', url, headers=BaijiaApi.default_hdrs)
         except:
             return
         return url if r.status_code == 200 else None
