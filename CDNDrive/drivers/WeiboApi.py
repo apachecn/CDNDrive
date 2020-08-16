@@ -34,6 +34,10 @@ class WeiboApi(BaseApi):
         self.cookies = parse_cookies(cookie_str)
         save_cookies('weibo', self.cookies)
         
+    def image_download(self, url):
+        url = re.sub(r'ws(\d).sinaimg.cn', r'wx\1.sinaimg.cn', url)
+        return super().image_download(url)
+        
     def image_upload(self, img):
             
         url = 'https://picupload.weibo.com/interface/pic_upload.php' + \
