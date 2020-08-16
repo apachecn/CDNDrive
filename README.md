@@ -37,6 +37,15 @@ username: 用户名
 password: 密码
 ```
 
+> 运行 cdrive 报错
+
+```
+$ cdrive
+-bash: cdrive: command not found
+```
+
+解决方案: https://github.com/apachecn/CDNDrive/issues/7
+
 ### 设置 Cookie
 
 ```
