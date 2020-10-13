@@ -1,0 +1,44 @@
+# config following variables 
+# at new pipelines/schedules:
+# SRC: http://path/to/files or
+#      git+{git repo} or
+#      cdrive+{cdrive meta}, splitted by ';'
+# DEST: cdrive sites, splited by ':',
+#       all sites in default
+# COOKIES: content in cdrive_cookies.json
+# $NAME: branch name of the generated epub
+#        the current time in default
+
+image: python:3.6
+
+before_script:
+  - pip install git+https://github.com/apachecn/CDNDrive
+  - cdrive -v
+  - echo $NAME
+  
+job:
+  script:
+    - python cdrive-batch.py
+  except:
+    - pushes
+    - merge_requests
+    
+after_script:
+    - mkdir out
+    - mv log.txt out/log.txt
+    - cd out
+    - git init
+    - git config user.name $GL_UN
+    - git config user.email $GL_EMAIL
+    - git add -A
+    - git commit -am init
+    - if [[ -z $NAME ]]; then export NAME=$(date +%Y%m%d%H%M%S%3N); fi
+    # configure $GL_TOKEN in the project CI/CD setting
+    - git push https://oauth2:${GL_TOKEN}@gitlab.com/${GL_USER}/${GL_REPO} master:$NAME -f
+    
+# configure these variables
+variables:
+    GL_UN: GL_UN # username of git commit
+    GL_EMAIL: GL_EMAIL # email of git commit
+    GL_USER: GL_USER # gitlab username
+    GL_REPO: GL_REPO # gitlab repo name
