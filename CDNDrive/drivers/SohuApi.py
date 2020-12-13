@@ -53,7 +53,7 @@ class SohuApi(BaseApi):
             return {'code': j['code'], 'message': j['msg']}
         mpid = j['data']['data'][0]['accounts'][0]['id']
         
-        url = 'https://mp.sohu.com/commons/front/outerUpload/v2/file'
+        url = 'https://mp.sohu.com/commons/front/outerUpload/image/file'
         files = {'file': (f"{time.time() * 1000}.png", img)}
         data = {'accountId': mpid}
         try:
