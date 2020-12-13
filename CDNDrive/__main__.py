@@ -279,6 +279,7 @@ def main():
     signal.signal(signal.SIGINT, lambda signum, frame: os.kill(os.getpid(), 9))
     parser = argparse.ArgumentParser(prog="CDNDrive", description="Make Picbeds Great Cloud Storages!", formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("-v", "--version", action="version", version=f"CDNDrive version: {__version__}")
+    parser.set_defaults(func=lambda x: parser.print_help())
     subparsers = parser.add_subparsers()
     
     login_parser = subparsers.add_parser("login", help="log in to the site")
@@ -316,11 +317,8 @@ def main():
     history_parser = subparsers.add_parser("history", help="show upload history")
     history_parser.set_defaults(func=history_handle)
     
-    if len(sys.argv) != 1:
-        args = parser.parse_args()
-        args.func(args)
-    else:
-        interact_mode(parser, subparsers)
+    args = parser.parse_args()
+    args.func(args)
 
 if __name__ == "__main__":
     main()
