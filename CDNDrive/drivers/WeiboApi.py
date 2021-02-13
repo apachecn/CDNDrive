@@ -56,7 +56,18 @@ class WeiboApi(BaseApi):
         
         idx = jstr.find('{')
         if idx == -1:
-            return {'code': 114514, 'message': 未知错误}
+            try:
+                jstr = request_retry(
+                    'POST', url, 
+                    data=data, 
+                    headers=WeiboApi.default_hdrs,
+                    cookies=self.cookies
+                ).text
+            except Exception as ex:
+                return {'code': 114514, 'message': str(ex)}
+        idx = jstr.find('{')
+        if idx == -1:
+            return {'code': 114514, 'message': '未知错误'}
         j = json.loads(jstr[idx:])
         code = j['data']['pics']['pic_1']['ret']
         if code == 1:

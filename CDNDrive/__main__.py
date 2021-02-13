@@ -12,7 +12,9 @@ import requests
 import shlex
 import signal
 import struct
+import io
 import sys
+#sys.stdout = io.TextIOWrapper(sys.stdout.buffer,encoding='utf8') #改变标准输出的默认编码
 import threading
 import time
 import traceback
@@ -44,6 +46,7 @@ def load_api_by_prefix(s):
 
 def fetch_meta(s):
     url = api.meta2real(s)
+    log(url)
     if not url: return None
     full_meta = api.image_download(url)
     if not full_meta: return None
@@ -117,7 +120,7 @@ def upload_handle(args):
         return
     log(f"上传: {path.basename(file_name)} ({size_string(path.getsize(file_name))})")
     first_4mb_sha1 = calc_sha1(read_in_chunk(file_name, size=4 * 1024 * 1024, cnt=1))
-    history = read_history(args.site)
+    history = read_history(args.site,file_name)
     if first_4mb_sha1 in history:
         url = history[first_4mb_sha1]['url']
         log(f"文件已于{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(history[first_4mb_sha1]['time']))}上传, 共有{len(history[first_4mb_sha1]['block'])}个分块")
@@ -135,14 +138,15 @@ def upload_handle(args):
     trpool = ThreadPoolExecutor(args.thread)
     hdls = []
     
-    blocks = read_in_chunk(file_name, size=args.block_size * 1024 * 1024)
-    for i, block in enumerate(blocks):
-        hdl = trpool.submit(tr_upload, i, block, block_dicts[i])
-        hdls.append(hdl)
+    #blocks = read_in_chunk(file_name, size=args.block_size * 1024 * 1024)
+    #for i, block in enumerate(blocks):
+    #    hdl = trpool.submit(tr_upload, i, block, block_dicts[i])
+    #    hdls.append(hdl)
+    upload_in_chunk(file_name,args.thread, trpool, tr_upload, block_dicts, hdls, size=args.block_size * 1024 * 1024)
     for h in hdls: h.result()
     if not succ: return
     
-    sha1 = calc_sha1(read_in_chunk(file_name))
+    sha1 = SHA1FileWithName(file_name)
     meta_dict = {
         'time': int(time.time()),
         'filename': path.basename(file_name),
@@ -158,7 +162,7 @@ def upload_handle(args):
         log("元数据上传完毕")
         log(f"{meta_dict['filename']} ({size_string(meta_dict['size'])}) 上传完毕, 用时{time.time() - start_time:.1f}秒, 平均速度{size_string(meta_dict['size'] / (time.time() - start_time))}/s")
         log(f"META URL -> {api.real2meta(url)}")
-        write_history(first_4mb_sha1, meta_dict, args.site, url)
+        write_history(first_4mb_sha1, meta_dict, args.site, url, file_name)
         return url
     else:
         log(f"元数据上传失败：{r.get('message')}")
@@ -171,6 +175,9 @@ def tr_download(i, block_dict, f, offset):
     url = block_dict['url']
     for j in range(10):
         if not succ: break
+        if '@s_0,h_2000' in url:
+            url = url.replace('@s_0,h_2000','')
+        log(url)
         block = api.image_download(url)
         if not block:
             log(f"分块{i + 1}/{nblocks}第{j + 1}次下载失败")
@@ -205,7 +212,7 @@ def download_handle(args):
     log(f"下载: {path.basename(file_name)} ({size_string(meta_dict['size'])}), 共有{len(meta_dict['block'])}个分块, 上传于{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(meta_dict['time']))}")
 
     if path.exists(file_name):
-        if path.getsize(file_name) == meta_dict['size'] and calc_sha1(read_in_chunk(file_name)) == meta_dict['sha1']:
+        if path.getsize(file_name) == meta_dict['size'] and SHA1FileWithName(file_name) == meta_dict['sha1']:
             log("文件已存在, 且与服务器端内容一致")
             return file_name
         if not args.force and not ask_overwrite():
@@ -228,7 +235,7 @@ def download_handle(args):
         f.truncate(meta_dict['size'])
     
     log(f"{path.basename(file_name)} ({size_string(meta_dict['size'])}) 下载完毕, 用时{time.time() - start_time:.1f}秒, 平均速度{size_string(meta_dict['size'] / (time.time() - start_time))}/s")
-    sha1 = calc_sha1(read_in_chunk(file_name))
+    sha1 = SHA1FileWithName(file_name)
     if sha1 == meta_dict['sha1']:
         log("文件校验通过")
         return file_name

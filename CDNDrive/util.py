@@ -10,9 +10,12 @@ import json
 import time
 import tempfile
 
-bundle_dir = tempfile.gettempdir()
+#bundle_dir = tempfile.gettempdir()
+bundle_dir = path.join(os.path.expanduser('~'),".config","cdrive")
+if not path.exists(bundle_dir):
+    os.makedirs(bundle_dir)
 cookie_fname = 'cdrive_cookies.json'
-history_fname = 'cdrive_history.json'
+history_fname = '.drive_history.json'
 
 def size_string(byte):
     if byte > 1024 * 1024 * 1024:
@@ -36,7 +39,36 @@ def calc_hash(data, algo, hex=True):
     
 calc_sha1 = lambda data, hex=True: calc_hash(data, 'sha1', hex)
 calc_md5 = lambda data, hex=True: calc_hash(data, 'md5', hex)
+
+'''
+sha1 file with filename (SHA1)
+'''
+def SHA1FileWithName(fineName, block_size=64 * 1024):
+  with open(fineName, 'rb') as f:
+    sha1 = hashlib.sha1()
+    while True:
+      data = f.read(block_size)
+      if not data:
+        break
+      sha1.update(data)
+    retsha1 = sha1.hexdigest()
+    return retsha1
+ 
+'''
+md5 file with filename (MD5)
+'''
+def MD5FileWithName(fineName, block_size=64 * 1024):
+  with open(fineName, 'rb') as f:
+    md5 = hashlib.md5()
+    while True:
+      data = f.read(block_size)
+      if not data:
+        break
+      md5.update(data)
+    retmd5 = md5.hexdigest()
+    return retmd5
     
+
 def image_download(url):
     headers = {
         'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36",
@@ -56,8 +88,11 @@ def image_download(url):
     return b"".join(content)
     
 
-def read_history(site=None):
-    fname = path.join(bundle_dir, history_fname)
+def read_history(site=None,file_name=None):
+    if file_name:
+        fname = path.join(bundle_dir, path.basename(file_name) + history_fname)
+    else:
+        fname = path.join(bundle_dir, history_fname)
     if not path.exists(fname):
         return {}
     with open(fname, encoding="utf-8") as f:
@@ -67,12 +102,12 @@ def read_history(site=None):
     else:
         return history.get(site, {})
 
-def write_history(first_4mb_sha1, meta_dict, site, url):
-    history = read_history()
+def write_history(first_4mb_sha1, meta_dict, site, url,file_name=None):
+    history = read_history(site,file_name)
     history.setdefault(site, {})
     history[site][first_4mb_sha1] = meta_dict
     history[site][first_4mb_sha1]['url'] = url
-    with open(path.join(bundle_dir, history_fname), "w", encoding="utf-8") as f:
+    with open(path.join(bundle_dir, path.basename(file_name) + history_fname), "w", encoding="utf-8") as f:
         f.write(json.dumps(history, ensure_ascii=False, indent=2))
     
 def read_in_chunk(fname, size=4 * 1024 * 1024, cnt=-1):
@@ -85,11 +120,37 @@ def read_in_chunk(fname, size=4 * 1024 * 1024, cnt=-1):
             yield data
             idx += 1
                 
+'''
+upload
+'''
+def upload_in_chunk(fname,thread,trpool,tr_upload,block_dicts,hdls,size=4 * 1024 * 1024):
+    with open(fname, "rb") as f:
+        idx = 0
+        thread_pool = []
+        while True:
+            while len(thread_pool) >= thread :
+                time.sleep(1)
+                for h in thread_pool: 
+                    if h.done():
+                        thread_pool.remove(h)
+            data = f.read(size)
+            if not data:
+                break
+            hdl = trpool.submit(tr_upload, idx, data, block_dicts[idx])
+            hdls.append(hdl)
+            thread_pool.append(hdl)
+            idx += 1
+            
+        
+    
+    
+    
 def log(message):
+    message = message.encode('gbk', 'ignore').decode('gbk')
     print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {message}")
     
 def request_retry(method, url, retry=10, **kwargs):
-    kwargs.setdefault('timeout', 10)
+    kwargs.setdefault('timeout', 120)
     for i in range(retry):
         try:
             return requests.request(method, url, **kwargs)
