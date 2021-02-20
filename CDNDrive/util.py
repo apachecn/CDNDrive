@@ -8,9 +8,10 @@ import types
 import requests
 import json
 import time
-import tempfile
 
-bundle_dir = tempfile.gettempdir()
+bundle_dir = os.path.join(os.path.expanduser('~'), '.CDNDrive')
+if not os.path.exists(bundle_dir):
+    os.mkdir(bundle_dir)
 cookie_fname = 'cdrive_cookies.json'
 history_fname = 'cdrive_history.json'
 
