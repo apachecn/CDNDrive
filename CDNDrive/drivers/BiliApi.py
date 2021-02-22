@@ -14,8 +14,6 @@ from .BaseApi import BaseApi
 
 class BiliApi(BaseApi):
     app_key = "1d8b6e7d45233436"
-
-    default_hdrs = {'User-Agent': "Mozilla/5.0 BiliDroid/5.51.1 (bbcallen@gmail.com)"}
     
     default_url = lambda self, sha1: f"http://i0.hdslb.com/bfs/album/{sha1}.png"
     extract_hash = lambda self, s: re.findall(r"[a-fA-F0-9]{40}", s)[0]    
