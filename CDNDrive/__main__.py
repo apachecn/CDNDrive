@@ -82,9 +82,9 @@ def userinfo_handle(args):
     if info: log(info)
     else: log("用户未登录")
     
-def tr_upload(i, block, block_dict):
+def tr_upload(i, block, block_dict,sha1):
     global succ
-
+    sha1.update(block)
     enco_block = encoder.encode(block)
     for j in range(10):
         if not succ: break
@@ -137,16 +137,17 @@ def upload_handle(args):
     block_dicts = [{} for _ in range(nblocks)]
     trpool = ThreadPoolExecutor(args.thread)
     hdls = []
-    
+    sha1 = hashlib.sha1()
     #blocks = read_in_chunk(file_name, size=args.block_size * 1024 * 1024)
     #for i, block in enumerate(blocks):
     #    hdl = trpool.submit(tr_upload, i, block, block_dicts[i])
     #    hdls.append(hdl)
-    upload_in_chunk(file_name,args.thread, trpool, tr_upload, block_dicts, hdls, size=args.block_size * 1024 * 1024)
+    upload_in_chunk(file_name,args.thread, trpool, tr_upload, block_dicts, hdls, sha1, size=args.block_size * 1024 * 1024)
     for h in hdls: h.result()
     if not succ: return
     
-    sha1 = SHA1FileWithName(file_name)
+    sha1 = sha1.hexdigest()
+    #sha1 = SHA1FileWithName(file_name)
     meta_dict = {
         'time': int(time.time()),
         'filename': path.basename(file_name),

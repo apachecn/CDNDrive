@@ -123,7 +123,7 @@ def read_in_chunk(fname, size=4 * 1024 * 1024, cnt=-1):
 '''
 upload
 '''
-def upload_in_chunk(fname,thread,trpool,tr_upload,block_dicts,hdls,size=4 * 1024 * 1024):
+def upload_in_chunk(fname,thread,trpool,tr_upload,block_dicts,hdls,sha1,size=4 * 1024 * 1024):
     with open(fname, "rb") as f:
         idx = 0
         thread_pool = []
@@ -136,7 +136,7 @@ def upload_in_chunk(fname,thread,trpool,tr_upload,block_dicts,hdls,size=4 * 1024
             data = f.read(size)
             if not data:
                 break
-            hdl = trpool.submit(tr_upload, idx, data, block_dicts[idx])
+            hdl = trpool.submit(tr_upload, idx, data, block_dicts[idx],sha1)
             hdls.append(hdl)
             thread_pool.append(hdl)
             idx += 1
@@ -150,7 +150,7 @@ def log(message):
     print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {message}")
     
 def request_retry(method, url, retry=10, **kwargs):
-    kwargs.setdefault('timeout', 120)
+    kwargs.setdefault('timeout', 300)
     for i in range(retry):
         try:
             return requests.request(method, url, **kwargs)

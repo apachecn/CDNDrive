@@ -176,7 +176,7 @@ class BiliApi(BaseApi):
             ).json()
         except:
             return
-        
+        print(j)
         if j['code'] != 0: return
         
         info = {
