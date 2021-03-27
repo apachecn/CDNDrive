@@ -14,13 +14,20 @@ bundle_dir = tempfile.gettempdir()
 cookie_fname = 'cdrive_cookies.json'
 history_fname = 'cdrive_history.json'
 
+ONE_TB = 1 << 40
+ONE_GB = 1 << 30
+ONE_MB = 1 << 20
+ONE_KB = 1 << 10
+
 def size_string(byte):
-    if byte > 1024 * 1024 * 1024:
-        return f"{byte / 1024 / 1024 / 1024:.2f} GB"
-    elif byte > 1024 * 1024:
-        return f"{byte / 1024 / 1024:.2f} MB"
-    elif byte > 1024:
-        return f"{byte / 1024:.2f} KB"
+    if byte >= ONE_TB:
+        return f"{byte / ONE_TB:.2f} TB"
+    elif byte >= ONE_GB:
+        return f"{byte / ONE_GB:.2f} GB"
+    elif byte >= ONE_MB:
+        return f"{byte / ONE_MB:.2f} MB"
+    elif byte >= ONE_KB:
+        return f"{byte / ONE_KB:.2f} KB"
     else:
         return f"{int(byte)} B"
 
