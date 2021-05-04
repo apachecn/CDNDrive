@@ -221,7 +221,8 @@ def download_handle(args):
     trpool = ThreadPoolExecutor(args.thread)
     hdls = []
     
-    with open(file_name, "a+b") as f:
+    mode = "r+b" if path.exists(file_name) else "wb"
+    with open(file_name, mode) as f:
         for i, block_dict in enumerate(meta_dict['block']):
             offset = block_offset(meta_dict, i)
             hdl = trpool.submit(tr_download, i, block_dict, f, offset)
