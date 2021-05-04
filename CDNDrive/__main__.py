@@ -140,7 +140,7 @@ def upload_handle(args):
         hdl = trpool.submit(tr_upload, i, block, block_dicts[i])
         hdls.append(hdl)
         # 及时清理队列中的任务
-        if len(hdls) == arg.thread:    
+        if len(hdls) == args.thread:    
             for h in hdls: h.result()
             hdls = []
     for h in hdls: h.result()
@@ -227,7 +227,7 @@ def download_handle(args):
             hdl = trpool.submit(tr_download, i, block_dict, f, offset)
             hdls.append(hdl)
             # 及时清理队列中的任务
-            if len(hdls) == arg.thread:    
+            if len(hdls) == args.thread:    
                 for h in hdls: h.result()
                 hdls = []
         for h in hdls: h.result()
