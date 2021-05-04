@@ -139,6 +139,10 @@ def upload_handle(args):
     for i, block in enumerate(blocks):
         hdl = trpool.submit(tr_upload, i, block, block_dicts[i])
         hdls.append(hdl)
+        # 及时清理队列中的任务
+        if len(hdls) == arg.thread:    
+            for h in hdls: h.result()
+            hdls = []
     for h in hdls: h.result()
     if not succ: return
     
@@ -217,12 +221,15 @@ def download_handle(args):
     trpool = ThreadPoolExecutor(args.thread)
     hdls = []
     
-    mode = "r+b" if path.exists(file_name) else "wb"
-    with open(file_name, mode) as f:
+    with open(file_name, "a+b") as f:
         for i, block_dict in enumerate(meta_dict['block']):
             offset = block_offset(meta_dict, i)
             hdl = trpool.submit(tr_download, i, block_dict, f, offset)
             hdls.append(hdl)
+            # 及时清理队列中的任务
+            if len(hdls) == arg.thread:    
+                for h in hdls: h.result()
+                hdls = []
         for h in hdls: h.result()
         if not succ: return
         f.truncate(meta_dict['size'])
