@@ -17,6 +17,7 @@ import threading
 import time
 import traceback
 import types
+import zlib
 from concurrent.futures import ThreadPoolExecutor
 from . import __version__
 from .drivers import *
@@ -103,7 +104,6 @@ def get_all_file(filepath):
     for root, dirnames, filenames in os.walk(filepath):
         for filename in filenames:
             filelist.append(os.path.join(root,filename))
-            print(os.path.join(root,filename))
     return filelist
 
 def upload_handle(args):
@@ -128,7 +128,11 @@ def upload_handle(args):
             args.file = f
             f_url = upload_handle(args)
             dir_file_date[f_url] = f
-
+        s = json.dumps(dir_file_date) #将数据转化成字符串
+        url = b"dirDrive://" + zlib.compress(str.encode(s), zlib.Z_BEST_COMPRESSION)
+        with open("shareDir.txt",'wb') as sd:
+            sd.write(url)
+        log("上传成功")
         return
     log(f"上传: {path.basename(file_name)} ({size_string(path.getsize(file_name))})")
     first_4mb_sha1 = calc_sha1(read_in_chunk(file_name, size=4 * 1024 * 1024, cnt=1))
