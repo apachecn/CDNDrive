@@ -97,7 +97,15 @@ def tr_upload(i, block, block_dict):
         else:
             log(f"分块{i + 1}/{nblocks}第{j + 1}次上传失败：{r.get('message')}")
             if j == 9: succ = False
-    
+
+def get_all_file(filepath):
+    filelist=[]
+    for root, dirnames, filenames in os.walk(filepath):
+        for filename in filenames:
+            filelist.append(os.path.join(root,filename))
+            print(os.path.join(root,filename))
+    return filelist
+
 def upload_handle(args):
     global api
     global encoder
@@ -113,7 +121,14 @@ def upload_handle(args):
         log(f"文件{file_name}不存在")
         return
     if path.isdir(file_name):
-        log("暂不支持上传文件夹")
+        log("正在测试支持上传文件夹")
+        filelist = get_all_file(file_name)
+        dir_file_date = {} # 用于存储文件夹信息
+        for f in filelist:
+            args.file = f
+            f_url = upload_handle(args)
+            dir_file_date[f_url] = f
+
         return
     log(f"上传: {path.basename(file_name)} ({size_string(path.getsize(file_name))})")
     first_4mb_sha1 = calc_sha1(read_in_chunk(file_name, size=4 * 1024 * 1024, cnt=1))
