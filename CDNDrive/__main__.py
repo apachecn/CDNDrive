@@ -127,11 +127,10 @@ def upload_handle(args):
         for f in filelist:
             args.file = f
             f_url = upload_handle(args)
-            dir_file_date[f_url] = f
-        s = json.dumps(dir_file_date) #将数据转化成字符串
-        url = "dirDrive://" + zlib.compress(str.encode(s), zlib.Z_BEST_COMPRESSION).decode("utf-8")
-        with open("shareDir.txt",'w') as sd:
-            sd.write(url)
+            dir_file_date[api.real2meta(f_url)] = f
+        s = json.dumps(dir_file_date)   #将数据转化成字符串
+        with open("shareDir.txt",'wb') as sd:
+            sd.write(s)
         log("上传成功")
         return
     log(f"上传: {path.basename(file_name)} ({size_string(path.getsize(file_name))})")

@@ -19,14 +19,16 @@ filelist = get_all_file(".")
 
 s = json.dumps(data)
 
-# t = zlib.compress(str.encode(s), zlib.Z_BEST_COMPRESSION)
+t = zlib.compress(str.encode(s), zlib.Z_BEST_COMPRESSION)
+print(t)
 # unt = zlib.decompress(t)
 # st = json.loads(unt)
 # print(type(st))
 
 with open("shareDir.txt",'rb') as f:
-    print(f.read())
-    unt = zlib.decompress(f)
+    e = f.read()[11:]
+    print(e)
+    unt = zlib.decompress(e)
     s = json.loads(unt)
     print(s)
 
