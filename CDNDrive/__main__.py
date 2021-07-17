@@ -129,8 +129,8 @@ def upload_handle(args):
             f_url = upload_handle(args)
             dir_file_date[f_url] = f
         s = json.dumps(dir_file_date) #将数据转化成字符串
-        url = b"dirDrive://" + zlib.compress(str.encode(s), zlib.Z_BEST_COMPRESSION)
-        with open("shareDir.txt",'wb') as sd:
+        url = "dirDrive://" + zlib.compress(str.encode(s), zlib.Z_BEST_COMPRESSION).decode("utf-8")
+        with open("shareDir.txt",'w') as sd:
             sd.write(url)
         log("上传成功")
         return
