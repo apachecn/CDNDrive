@@ -12,6 +12,7 @@ import requests
 import shlex
 import signal
 import struct
+import shutil
 import sys
 import threading
 import time
@@ -129,9 +130,9 @@ def upload_handle(args):
             f_url = upload_handle(args)
             dir_file_date[api.real2meta(f_url)] = f
         s = json.dumps(dir_file_date,ensure_ascii=False)   #将数据转化成字符串
-        with open("shareDir.txt",'w') as sd:
+        with open("shareDir.json",'w') as sd:
             sd.write(s)
-        log("上传成功")
+        log("文件夹上传成功")
         return
     log(f"上传: {path.basename(file_name)} ({size_string(path.getsize(file_name))})")
     first_4mb_sha1 = calc_sha1(read_in_chunk(file_name, size=4 * 1024 * 1024, cnt=1))
@@ -262,6 +263,24 @@ def download_handle(args):
         log("文件校验未通过")
         return
 
+
+def dir_file_download_handle(args):
+    with open("./shareDir.txt",'r') as sd:
+        data = json.loads(sd.read())
+    for i in data:
+        args.meta = i
+        filepath = os.path.dirname(data[i])
+        if not os.path.exists(filepath):
+            os.makedirs(filepath)
+        download_handle(args)
+        try:
+            shutil.move(os.path.basename(data[i]), filepath)
+        except:
+            log("未找到该文件")
+
+    pass
+
+
 def info_handle(args):
     if not load_api_by_prefix(args.meta):
         log("元数据解析失败")
@@ -336,7 +355,15 @@ def main():
     download_parser.add_argument("-f", "--force", action="store_true", help="force to overwrite if file exists")
     download_parser.add_argument("-t", "--thread", default=8, type=int, help="download thread number")
     download_parser.set_defaults(func=download_handle)
-    
+
+    downloadDir_parser = subparsers.add_parser("downloadDir", help="download a file")
+    downloadDir_parser.add_argument("meta",  default="", help="meta url")
+    downloadDir_parser.add_argument("share", default="./shareDir.txt", help="meta url")
+    downloadDir_parser.add_argument("file", nargs="?", default="", help="new file name")
+    downloadDir_parser.add_argument("-f", "--force", action="store_true", help="force to overwrite if file exists")
+    downloadDir_parser.add_argument("-t", "--thread", default=8, type=int, help="download thread number")
+    downloadDir_parser.set_defaults(func=dir_file_download_handle)
+
     info_parser = subparsers.add_parser("info", help="show meta info")
     info_parser.add_argument("meta", help="meta url")
     info_parser.set_defaults(func=info_handle)

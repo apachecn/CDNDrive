@@ -1,4 +1,5 @@
 import os
+import shutil
 import zlib
 import json
 
@@ -25,11 +26,8 @@ print(t)
 # st = json.loads(unt)
 # print(type(st))
 
-with open("shareDir.txt",'rb') as f:
-    e = f.read()[11:]
-    print(e)
-    unt = zlib.decompress(e)
-    s = json.loads(unt)
-    print(s)
+with open("shareDir.txt",'r') as f:
+    data = json.loads(f.read())
 
-
+print(data)
+shutil.move("D:\\uptest\\r5apex.exe","D:\\")
