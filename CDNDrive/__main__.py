@@ -128,8 +128,8 @@ def upload_handle(args):
             args.file = f
             f_url = upload_handle(args)
             dir_file_date[api.real2meta(f_url)] = f
-        s = json.dumps(dir_file_date)   #将数据转化成字符串
-        with open("shareDir.txt",'wb') as sd:
+        s = json.dumps(dir_file_date,ensure_ascii=False)   #将数据转化成字符串
+        with open("shareDir.txt",'w') as sd:
             sd.write(s)
         log("上传成功")
         return
