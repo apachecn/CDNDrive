@@ -66,16 +66,18 @@ site: 站点名称（见 -h）
 ### 上传
 
 ```
-cdrive upload [-h] [-b BLOCK_SIZE] [-t THREAD] site file
+cdrive upload [-h] [-b BLOCK_SIZE] [-t THREAD] [-s SSP] site file
 
 site: 站点名称（见 -h）
 file: 待上传的文件路径
 
 -b BLOCK_SIZE: 分块大小(MB), 默认值为4
 -t THREAD: 上传线程数, 默认值为4
+-s 上传文件夹时保存的分享文件路径
 ```
 
 上传完毕后，终端会打印一串 META URL 用于下载或分享，请妥善保管
+若上传的是文件夹，则会生成一个分享文件shareDir.txt(or .json)
 
 ### 下载
 
@@ -90,6 +92,19 @@ file: 另存为新的文件名, 不指定则保存为上传时的文件名
 ```
 
 下载完毕后会自动进行文件完整性校验，对于大文件该过程可能需要较长时间，若不愿等待可直接退出
+
+
+### 下载文件夹
+
+```
+cdrive downloadDir share [filePath]
+
+share: 上传文件夹生成的分享文件路径
+file: 另存为新的文件名, 不指定则保存为上传时的文件名
+
+-f: 覆盖已有文件
+-t THREAD: 下载线程数, 默认值为8
+```
 
 ### 查看文件元数据
 
