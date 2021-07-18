@@ -130,7 +130,7 @@ def upload_handle(args):
             f_url = upload_handle(args)
             dir_file_date[api.real2meta(f_url)] = f
         s = json.dumps(dir_file_date,ensure_ascii=False)   #将数据转化成字符串
-        with open("../shareDir.json",'w') as sd:
+        with open(args.ssp,'w') as sd:
             sd.write(s)
         log("文件夹上传成功")
         return
@@ -265,7 +265,7 @@ def download_handle(args):
 
 
 def dir_file_download_handle(args):
-    with open("./shareDir.txt",'r') as sd:
+    with open(args.share,'r') as sd:
         data = json.loads(sd.read())
     for i in data:
         args.meta = i
@@ -346,6 +346,7 @@ def main():
     upload_parser.add_argument("site", help="site", choices=drivers.keys())
     upload_parser.add_argument("file", help="name of the file to upload")
     upload_parser.add_argument("-b", "--block-size", default=4, type=int, help="block size in MB")
+    upload_parser.add_argument("-s", "--ssp", default="../shareDir.json", type=str, help="Save share file path")
     upload_parser.add_argument("-t", "--thread", default=4, type=int, help="upload thread number")
     upload_parser.set_defaults(func=upload_handle)
     
@@ -358,7 +359,7 @@ def main():
 
     downloadDir_parser = subparsers.add_parser("downloadDir", help="download some files")
     downloadDir_parser.add_argument("meta",  default="", help="meta url")
-    downloadDir_parser.add_argument("share", default="./shareDir.txt", help="path")
+    downloadDir_parser.add_argument("share", default="./shareDir.txt", type=str, help="path")
     downloadDir_parser.add_argument("file", nargs="?", default="", help="new file name")
     downloadDir_parser.add_argument("-f", "--force", action="store_true", help="force to overwrite if file exists")
     downloadDir_parser.add_argument("-t", "--thread", default=8, type=int, help="download thread number")
