@@ -180,6 +180,12 @@ META URL：`bdrive://d28784bff1086450a6c331fb322accccd382228e`
 
 平均速度：104.97 MB/s
 
+### 下载与上传文件夹测试
+
+![CDNDrive上传](https://cdn.jsdelivr.net/gh/edmund-zhao/img-files@master/20210717/CDNDrive上传.6q9ygxi6eus0.png)
+
+![image](https://cdn.jsdelivr.net/gh/edmund-zhao/img-files@master/20210717/image.3k55idyiwgi0.png)
+
 ## 历史记录
 
 [见这里](history.md)。
