@@ -18,10 +18,10 @@ import time
 import traceback
 import types
 from concurrent.futures import ThreadPoolExecutor
-from . import __version__
-from .drivers import *
-from .encoders import *
-from .util import *
+from CDNDrive import __version__
+from CDNDrive.drivers import *
+from CDNDrive.encoders import *
+from CDNDrive.util import *
 
 encoder = None
 api = None
