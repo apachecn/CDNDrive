@@ -39,16 +39,22 @@ class AutoHomeApi(BaseApi):
         url = 'https://clubajax.autohome.com.cn/Upload/UpImageOfBase64New?dir=image&cros=autohome.com.c'
         files = {'file': (f"{time.time()}.jpg", img, 'image/jpeg')}
         try:
-            j = request_retry(
+            r = request_retry(
                 'POST', url, 
                 files=files, 
                 headers=AutoHomeApi.default_hdrs,
                 cookies=self.cookies
-            ).json()
+            )
         except Exception as ex:
             return {'code': 114514, 'message': str(ex)}
             
-        
+        if r.status_code != 200:
+            return {
+                'code': r.status_code, 
+                'message': f'HTTP {r.status_code}'
+            }
+            
+        j = r.json()
         j['code'] = j.get('error', 0)
         if j['code'] == 0:
             j['data'] = 'https://club2.autoimg.cn/' + \
