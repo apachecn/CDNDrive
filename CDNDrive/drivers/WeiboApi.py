@@ -56,7 +56,7 @@ class WeiboApi(BaseApi):
         
         idx = jstr.find('{')
         if idx == -1:
-            return {'code': 114514, 'message': 未知错误}
+            return {'code': 114514, 'message': '未知错误'}
         j = json.loads(jstr[idx:])
         code = j['data']['pics']['pic_1']['ret']
         if code == 1:
