@@ -51,7 +51,8 @@ class AutoHomeApi(BaseApi):
         
         j['code'] = j.get('error', 0)
         if j['code'] == 0:
-            j['data'] = 'https://club2.autoimg.cn/' + j['url']
+            j['data'] = 'https://club2.autoimg.cn/' + \
+                re.sub(r'userphotos/\d+/\d+/\d+/\d+/', '', j['file'])
         return j
         
 def main():
