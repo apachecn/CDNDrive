@@ -1,5 +1,6 @@
 from .PngEncoder import PngEncoder
 from .GifEncoder import GifEncoder
+from .JpgCatEncoder import JpgCatEncoder
 
 encoders = {
     'bili': PngEncoder(),
@@ -12,4 +13,5 @@ encoders = {
     '163': PngEncoder(),
     'osc': PngEncoder(),
     'sogou': PngEncoder(),
+    'autohome': JpgCatEncoder(),
 }

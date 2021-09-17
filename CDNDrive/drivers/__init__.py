@@ -8,6 +8,7 @@ from .AliApi import AliApi
 from .NeteApi import NeteApi
 from .OscApi import OscApi
 from .SogouApi import SogouApi
+from .AutoHomeApi import AutoHomeApi
 
 drivers = {
     'bili': BiliApi(),
@@ -20,6 +21,7 @@ drivers = {
     '163': NeteApi(),
     'osc': OscApi(),
     'sogou': SogouApi(),
+    'autohome': AutoHomeApi(),
 }
 
 prefixes = {
@@ -35,4 +37,5 @@ prefixes = {
     'nedrive': '163',
     'osdrive': 'osc',
     'sgdrive': 'sogou',
+    'ahdrive': 'autohome',
 }
