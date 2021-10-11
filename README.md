@@ -191,7 +191,7 @@ META URL：`bdrive://d28784bff1086450a6c331fb322accccd382228e`
 
 ## 赞助我们
 
-![](https://home.apachecn.org/img/about/donate.jpg)
+![](https://home.apachecn.org/img/qr/zfb_wx.png)
 
 ## 另见
 
