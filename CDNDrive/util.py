@@ -11,7 +11,7 @@ import time
 import tempfile
 
 bundle_dir = tempfile.gettempdir()
-cookie_fname = 'cdrive_cookies'
+cookie_fname = 'cdrive_cookies.json'
 history_dir = 'cdrive_history'
 
 ONE_TB = 1 << 40
