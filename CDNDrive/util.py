@@ -68,18 +68,39 @@ def safe_mkdir(dir):
     except: pass
 
 def read_history_all(site=None):
-    pass
+    dir = path.join(bundle_dir, history_dir)
+    if not path.isdir(dir):
+        return {}
+    res = {}
+    fnames = os.listdir(dir)
+    for fname in fnames:
+        tmp = fname.replace('.json', '').split('-')
+        if len(tmp) < 2: continue
+        cur_site, f4m_sha1 = tmp[0], tmp[1]
+        if site and cur_site != site: continue
+        fname = path.join(dir, fname)
+        try:
+            cont = json.loads(open(fname, encoding="utf-8").read())
+        except:
+            continue
+        res.setdefault(cur_site, {})
+        res[cur_site][f4m_sha1] = cont
+        
+    if site:
+        return res.get(site, {})
+    else:
+        return res
 
 def read_history(site=None, f4m_sha1=None):
     if site is None or f4m_sha1 is None:
         return read_history_all(site)
     fname = path.join(bundle_dir, history_dir, f'{site}-{f4m_sha1}.json')
     if not path.isfile(fname):
-        return {}
+        return None
     try:
         return json.loads(open(fname, encoding="utf-8").read())
     except:
-        return {}
+        return None
 
 def write_history(f4m_sha1, meta_dict, site, url):
     dir = path.join(bundle_dir, history_dir)
