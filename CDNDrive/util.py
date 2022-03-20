@@ -11,8 +11,8 @@ import time
 import tempfile
 
 bundle_dir = tempfile.gettempdir()
-cookie_fname = 'cdrive_cookies.json'
-history_fname = 'cdrive_history.json'
+cookie_fname = 'cdrive_cookies'
+history_dir = 'cdrive_history'
 
 ONE_TB = 1 << 40
 ONE_GB = 1 << 30
@@ -63,7 +63,7 @@ def image_download(url):
     return b"".join(content)
     
 
-def read_history(site=None):
+def read_history(site=None, first_4mb_sha1=None):
     fname = path.join(bundle_dir, history_fname)
     if not path.exists(fname):
         return {}
@@ -74,13 +74,11 @@ def read_history(site=None):
     else:
         return history.get(site, {})
 
-def write_history(first_4mb_sha1, meta_dict, site, url):
-    history = read_history()
-    history.setdefault(site, {})
-    history[site][first_4mb_sha1] = meta_dict
-    history[site][first_4mb_sha1]['url'] = url
-    with open(path.join(bundle_dir, history_fname), "w", encoding="utf-8") as f:
-        f.write(json.dumps(history, ensure_ascii=False, indent=2))
+def write_history(f4m_sha1, meta_dict, site, url):
+    fname = path.join(bundle_dir, history_dir, f'{site}-{f4m_sha1}.json')
+    meta_dict['url'] = url
+    open(fname, 'w', encoding='utf-8').write(
+        json.dumps(meta_dict, ensure_ascii=False, indent=2))
     
 def read_in_chunk(fname, size=4 * 1024 * 1024, cnt=-1):
     with open(fname, "rb") as f:
