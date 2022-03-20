@@ -158,8 +158,10 @@ def load_cookies(site=None):
     fname = path.join(bundle_dir, cookie_fname)
     if not path.exists(fname):
         return {}
-    with open(fname, encoding="utf-8") as f:
-        cookies = json.loads(f.read())
+    try:
+        cookies = json.loads(open(fname, encoding="utf-8").read())
+    except:
+        return {}
     if not site: 
         return cookies
     else: 
