@@ -116,11 +116,11 @@ def upload_handle(args):
         log("暂不支持上传文件夹")
         return
     log(f"上传: {path.basename(file_name)} ({size_string(path.getsize(file_name))})")
-    first_4mb_sha1 = calc_sha1(read_in_chunk(file_name, size=4 * 1024 * 1024, cnt=1))
-    history = read_history(args.site)
-    if first_4mb_sha1 in history:
-        url = history[first_4mb_sha1]['url']
-        log(f"文件已于{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(history[first_4mb_sha1]['time']))}上传, 共有{len(history[first_4mb_sha1]['block'])}个分块")
+    f4m_sha1 = calc_sha1(read_in_chunk(file_name, size=4 * 1024 * 1024, cnt=1))
+    history = read_history(args.site, f4m_sha1)
+    if history:
+        url = history['url']
+        log(f"文件已于{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(history['time']))}上传, 共有{len(history['block'])}个分块")
         log(f"META URL -> {api.real2meta(url)}")
         return url
 
@@ -162,7 +162,7 @@ def upload_handle(args):
         log("元数据上传完毕")
         log(f"{meta_dict['filename']} ({size_string(meta_dict['size'])}) 上传完毕, 用时{time.time() - start_time:.1f}秒, 平均速度{size_string(meta_dict['size'] / (time.time() - start_time))}/s")
         log(f"META URL -> {api.real2meta(url)}")
-        write_history(first_4mb_sha1, meta_dict, args.site, url)
+        write_history(f4m_sha1, meta_dict, args.site, url)
         return url
     else:
         log(f"元数据上传失败：{r.get('message')}")
