@@ -73,4 +73,15 @@ class ChaoXingApi(BaseApi):
         if '登录' in resp.text:
             return '用户未登录'
         else:
-            return '用户已登录'
+            info_url = 'http://passport2.chaoxing.com/mooc/accountManage'
+            resp = request_retry(
+                "get", info_url,
+                headers=headers,
+                cookies=self.cookies
+            )
+            name = re.findall(r"messageName\">(.*?)</", resp.text)[0]
+            phone = re.findall(r"messagePhone\">(.*?)</", resp.text)[0]
+            if fmt:
+                return f"姓名：{name}，手机号：{phone}"
+            else:
+                return dict(name=name, phone=phone)
