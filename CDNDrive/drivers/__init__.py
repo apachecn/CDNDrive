@@ -9,6 +9,7 @@ from .NeteApi import NeteApi
 from .OscApi import OscApi
 from .SogouApi import SogouApi
 from .AutoHomeApi import AutoHomeApi
+from .ChaoXingApi import ChaoXingApi
 
 drivers = {
     'bili': BiliApi(),
@@ -22,6 +23,7 @@ drivers = {
     'osc': OscApi(),
     'sogou': SogouApi(),
     'autohome': AutoHomeApi(),
+    'chaoxing': ChaoXingApi(),
 }
 
 prefixes = {
@@ -38,4 +40,5 @@ prefixes = {
     'osdrive': 'osc',
     'sgdrive': 'sogou',
     'ahdrive': 'autohome',
+    'cxdrive': 'chaoxing',
 }
