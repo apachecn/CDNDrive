@@ -14,4 +14,5 @@ encoders = {
     'osc': PngEncoder(),
     'sogou': PngEncoder(),
     'autohome': JpgCatEncoder(),
+    'chaoxing': PngEncoder(),
 }

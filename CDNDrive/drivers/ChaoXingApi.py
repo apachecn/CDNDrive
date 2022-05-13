@@ -7,11 +7,9 @@ from .BaseApi import BaseApi
 class ChaoXingApi(BaseApi):
     headers = {
         'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                      'Chrome/84.0.4147.125 Safari/537.36',
-        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-        'X-Requested-With': 'XMLHttpRequest',
+                      'Chrome/84.0.4147.125 Safari/537.36'
     }
-    default_url = lambda self, obj_id: f"https://cs-ans.chaoxing.com/download/{obj_id}"
+    default_url = lambda self, obj_id: f"http://p.ananas.chaoxing.com/star3/origin/{obj_id}.png"
     extract_obj_id = lambda self, s: re.findall(r"[a-fA-F0-9]{32}", s)[0]
     get_cookies = lambda self: self.cookies
 
@@ -26,7 +24,7 @@ class ChaoXingApi(BaseApi):
             return None
 
     def real2meta(self, url):
-        if re.match(r"^https?://.*?\.chaoxing\.com/download/[a-fA-F0-9]{32}$", url):
+        if re.match(r"^http://p.ananas.chaoxing.com/star3/origin/[a-fA-F0-9]{32}.png$", url):
             return "cxdrive://" + self.extract_obj_id(url)
         else:
             return None
@@ -85,3 +83,29 @@ class ChaoXingApi(BaseApi):
                 return f"姓名：{name}，手机号：{phone}"
             else:
                 return dict(name=name, phone=phone)
+
+    # def _get_course(self):
+    #     headers = ChaoXingApi.headers.copy()
+    #     course_url = 'https://mooc2-ans.chaoxing.com/visit/courses/list'
+
+    def image_upload(self, img):
+        headers = ChaoXingApi.headers.copy()
+        upload_url = 'https://notice.chaoxing.com/pc/files/uploadNoticeFile'
+        files = {
+            'attrFile': (f"{int(time.time() * 1000)}.png", img)
+        }
+        try:
+            resp = request_retry(
+                "POST", upload_url,
+                files=files,
+                headers=headers,
+                cookies=self.cookies
+            )
+            data = json.loads(resp.text)
+            if data['status']:
+                img_url = self.default_url(data['att_file']['att_clouddisk']['fileId'])
+                return {'code': 0, 'data': img_url}
+            else:
+                return None
+        except Exception as e:
+            return {'code': 114514, 'message': str(e)}
