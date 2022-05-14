@@ -90,7 +90,7 @@ class ChaoXingApi(BaseApi):
 
     def image_upload(self, img):
         headers = ChaoXingApi.headers.copy()
-        upload_url = 'https://notice.chaoxing.com/pc/files/uploadNoticeFile'
+        upload_url = 'http://notice.chaoxing.com/pc/files/uploadNoticeFile'
         files = {
             'attrFile': (f"{int(time.time() * 1000)}.png", img)
         }
@@ -103,7 +103,8 @@ class ChaoXingApi(BaseApi):
             )
             data = json.loads(resp.text)
             if data['status']:
-                img_url = self.default_url(data['att_file']['att_clouddisk']['fileId'])
+                # img_url = self.default_url(data['att_file']['att_clouddisk']['fileId'])
+                img_url = data['url'].split('?')[0]
                 return {'code': 0, 'data': img_url}
             else:
                 return None
