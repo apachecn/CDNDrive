@@ -18,6 +18,7 @@ import time
 import traceback
 import types
 from concurrent.futures import ThreadPoolExecutor
+import subprocess as subp
 from . import __version__
 from .drivers import *
 from .encoders import *
@@ -270,6 +271,28 @@ def history_handle(args):
             print_history_meta(meta_dict, prefix)
             idx += 1
 
+def batch_handle(args):
+    drivers = args.sites.split(' ')
+    dir = args.dir
+    files = os.listdir(dir)
+    log_fname = args.log
+    flog = open(log_fname, 'a', encoding='utf8')
+    for d in drivers:
+        for f in files:
+            f = path.join(dir, f)
+            print(f)
+            r = subp.Popen(
+                ['cdrive', 'upload', d, f], 
+                shell=True,
+                stdout=subp.PIPE,
+                stderr=subp.PIPE,
+            ).communicate()
+            r = r[0] or r[1]
+            print(r)
+            flog.write(r)
+    flog.close()
+            
+
 def interact_mode(parser, subparsers):
     subparsers.add_parser("help", help="show this help message").set_defaults(func=lambda _: parser.parse_args(["--help"]).func())
     subparsers.add_parser("version", help="show program's version number").set_defaults(func=lambda _: parser.parse_args(["--version"]).func())
@@ -325,6 +348,12 @@ def main():
     history_parser = subparsers.add_parser("history", help="show upload history")
     history_parser.set_defaults(func=history_handle)
     
+    batch_parser = subparsers.add_parser("batch", help="upload files in a dir in batch")
+    batch_parser.add_argument("sites", help="sites splitted with comma ','")
+    batch_parser.add_argument("dir", help="dir name")
+    batch_parser.add_argument("-l", "--log", default="log.txt", help="log file name")
+    batch_parser.set_defaults(func=batch_handle)
+
     args = parser.parse_args()
     args.func(args)
 
