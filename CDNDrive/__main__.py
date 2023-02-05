@@ -287,7 +287,7 @@ def batch_handle(args):
                 stdout=subp.PIPE,
                 stderr=subp.PIPE,
             ).communicate()
-            r = r[0] or r[1]
+            r = (r[0] or r[1] or b'').decode('gbk', 'ignore')
             print(r)
             flog.write(r)
     flog.close()
