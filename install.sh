@@ -1,2 +1,2 @@
-pip uninstall BookerTrans -y
+pip uninstall CDNDrive -y
 python setup.py install
