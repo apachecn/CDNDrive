@@ -7,8 +7,8 @@ from io import BytesIO
 class PngEncoder:
 
     def __init__(self):
-        self.minw = 10
-        self.minh = 10
+        self.minw = 20
+        self.minh = 20
         self.dep = 3
         self.mode = 'RGB'
 
